@@ -1,0 +1,83 @@
+{
+  "name": "agent-enderun",
+  "version": "1.11.0",
+  "description": "The Supreme AI Governance & Autonomous Orchestration Framework for Enterprise Development. Acts as a Corporate AI Management Assistant.",
+  "author": "Yusuf BEKAR",
+  "license": "MIT",
+  "readme": "README.md",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ysf-bkr/Agent-Enderun.git"
+  },
+  "homepage": "https://github.com/ysf-bkr/Agent-Enderun#readme",
+  "bugs": {
+    "url": "https://github.com/ysf-bkr/Agent-Enderun/issues"
+  },
+  "keywords": [
+    "ai",
+    "governance",
+    "orchestration",
+    "agents",
+    "mcp",
+    "typescript",
+    "framework"
+  ],
+  "workspaces": [
+    "framework-mcp"
+  ],
+  "bin": {
+    "agent-enderun": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "templates",
+    "framework-mcp",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc && npm run build --prefix framework-mcp",
+    "enderun:build": "npm run build --prefix framework-mcp",
+    "enderun:test": "vitest run",
+    "enderun:test:watch": "vitest",
+    "enderun:status": "agent-enderun status",
+    "enderun:trace": "agent-enderun trace:new",
+    "enderun:verify": "agent-enderun verify-contract",
+    "enderun:update-contract": "agent-enderun update-contract",
+    "enderun:check": "agent-enderun check",
+    "enderun:dashboard": "node bin/enderun-dashboard.js",
+    "test:init": "node dist/src/cli/index.js init",
+    "enderun:lint": "eslint .",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist node_modules framework-mcp/node_modules framework-mcp/dist"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@pandacss/dev": "^1.11.1",
+    "@types/node": "^25.9.1",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "tsx": "^4.22.3",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.0.0"
+  },
+  "enderun": {
+    "version": "1.11.0",
+    "initializedAt": "2026-06-04T18:51:28.970Z",
+    "frameworkDir": ".enderun"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "js-yaml": "^4.2.0",
+    "zod": "^3.24.2"
+  }
+}
