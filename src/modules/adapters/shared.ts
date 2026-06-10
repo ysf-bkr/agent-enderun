@@ -4,11 +4,14 @@ import os from "os";
 import { writeJsonFile, writeTextFile } from "../../shared/fs.js";
 import { ALL_AGENTS, toAntigravityJson } from "../agents/definitions.js";
 import { CORE_SKILLS } from "../skills/definitions.js";
+import { getPackageRoot } from "../../cli/utils/pkg.js";
 
 export function registerGlobalAntigravityPlugins(mcpBlock: unknown): void {
-    const targets = [
-        path.join(os.homedir(), ".gemini/antigravity-cli")
-    ];
+    // Allow overriding via env var for different OS/Gemini CLI versions
+    const defaultGlobalDir = path.join(os.homedir(), ".gemini/antigravity-cli");
+    const customDir = process.env["ANTIGRAVITY_GLOBAL_DIR"];
+    const targets = [customDir ?? defaultGlobalDir];
+    const baseKnowledgeDir = path.join(getPackageRoot(), "templates/standards");
 
     for (const globalDir of targets) {
         try {
@@ -37,7 +40,7 @@ export function registerGlobalAntigravityPlugins(mcpBlock: unknown): void {
             const agentsBaseDir = path.join(globalPluginDir, "agents");
             fs.mkdirSync(agentsBaseDir, { recursive: true });
             for (const ag of ALL_AGENTS) {
-                const agentJson = toAntigravityJson(ag);
+                const agentJson = toAntigravityJson(ag, baseKnowledgeDir);
 
                 // 1. Nested format (agents/{agent_name}/agent.json)
                 const nestedAgentDir = path.join(agentsBaseDir, ag.name);

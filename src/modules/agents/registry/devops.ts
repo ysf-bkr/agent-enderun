@@ -16,11 +16,13 @@ export const devops: AgentDefinition = {
     tools: [
         "run_shell_command",
         "read_file",
+        "write_file",
         "list_dir",
         "get_system_health",
         "check_active_ports",
         "read_project_memory",
         "send_agent_message",
+        "log_agent_action",
     ],
     instructions: {
         identity: "Infrastructure Engineer and Environment Integrity Guardian",

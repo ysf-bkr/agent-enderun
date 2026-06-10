@@ -38,7 +38,7 @@ export const ADAPTER_CONFIGS: Record<AdapterId, AdapterConfig> = {
         shimTemplate: "src/cli/shims/grok.md",
         role: "researcher",
         templateDir: ".enderun",
-        nestedDirs: ["rules"],
+        nestedDirs: ["agents", "rules"],
         agentsDir: ".grok/agents",
         agentsExt: ".md"
     },

@@ -1,12 +1,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  Enderun Army — Agent Registry
 //  Enderun Order v2 · Structured AgentDefinition schema
+//
+//  VALID FRONTMATTER FIELDS per platform:
+//  ┌───────────────┬────────────────────────────────────────────────────────────┐
+//  │ gemini-cli    │ name, description, model, tools (YAML list)                │
+//  │ claude-code   │ name, description, model, tools (inline array), color      │
+//  │ cursor        │ description, globs, alwaysApply                            │
+//  │ codex-cli     │ agent-type, display-name, when-to-use, model, allowed-tools│
+//  │ antigravity   │ JSON — customAgentSpec schema                              │
+//  └───────────────┴────────────────────────────────────────────────────────────┘
+//  Custom fields (capability, tags, tier) are Enderun-internal metadata and
+//  must NOT appear in any platform frontmatter.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import fs from "fs";
 import path from "path";
 import { AgentDefinition } from "./types.js";
 import { getPackageRoot } from "../../cli/utils/pkg.js";
+import { CURSOR_AGENT_GLOBS } from "../../shared/constants.js";
 
 // Import individual agent definitions
 import { manager } from "./registry/manager.js";
@@ -40,15 +52,13 @@ export const ALL_AGENTS: AgentDefinition[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Multi-Platform Agent Exporter
-//  Supported targets:
-//    claude-code  → .claude/agents/{name}.md   (YAML frontmatter + system prompt)
-//    gemini-cli   → .gemini/agents/{name}.md   (same format, Gemini field names)
-//    antigravity  → .agents/{name}/agent.json  (JSON, customAgent schema)
-//    codex-cli    → .agents/{name}.md          (YAML frontmatter, AGENTS.md style)
+//  Tool Maps — Internal tool names → platform-native tool identifiers
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Map our internal tool names → Claude Code's built-in tool identifiers */
+/**
+ * Claude Code built-in tool names (case-sensitive).
+ * Reference: https://docs.anthropic.com/en/docs/claude-code/sub-agents
+ */
 const CLAUDE_TOOL_MAP: Record<string, string> = {
     read_file:             "Read",
     write_file:            "Write",
@@ -62,7 +72,6 @@ const CLAUDE_TOOL_MAP: Record<string, string> = {
     run_tests:             "Bash",
     log_agent_action:      "Write",
     send_agent_message:    "Task",
-    // Enderun-custom tools pass through as-is (MCP or custom tools)
     orchestrate_loop:      "Task",
     get_project_map:       "Bash",
     get_project_gaps:      "Bash",
@@ -75,17 +84,24 @@ const CLAUDE_TOOL_MAP: Record<string, string> = {
     check_active_ports:    "Bash",
     start_dashboard:       "Bash",
     update_contract_hash:  "Write",
+    acquire_lock:          "Write",
+    release_lock:          "Write",
+    register_agent:        "Write",
+    check_lint:            "Bash",
 };
 
-/** Map our internal tool names → Gemini CLI tool identifiers */
+/**
+ * Gemini CLI built-in tool names.
+ * Reference: https://ai.google.dev/gemini-api/docs/function-calling
+ */
 const GEMINI_TOOL_MAP: Record<string, string> = {
     read_file:             "read_file",
     write_file:            "write_file",
-    replace_text:          "replace",
-    batch_surgical_edit:   "replace",
-    patch_file:            "replace",
+    replace_text:          "replace_in_file",
+    batch_surgical_edit:   "replace_in_file",
+    patch_file:            "replace_in_file",
     list_dir:              "list_directory",
-    grep_search:           "grep_search",
+    grep_search:           "search_file_content",
     run_shell_command:     "run_shell_command",
     view_file:             "read_file",
     run_tests:             "run_shell_command",
@@ -103,77 +119,122 @@ const GEMINI_TOOL_MAP: Record<string, string> = {
     check_active_ports:    "run_shell_command",
     start_dashboard:       "run_shell_command",
     update_contract_hash:  "write_file",
+    acquire_lock:          "write_file",
+    release_lock:          "write_file",
+    register_agent:        "write_file",
+    check_lint:            "run_shell_command",
 };
 
-/** Strategy: which model to assign based on capability score */
+// ─────────────────────────────────────────────────────────────────────────────
+//  Model Resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Assigns the appropriate model based on capability score.
+ * Only valid, real model identifiers are used here.
+ */
 function resolveModel(
     cap: number,
     platform: "claude-code" | "gemini-cli" | "antigravity" | "codex-cli"
 ): string {
     if (platform === "claude-code") {
-        return cap === 10 ? "claude-opus-4-8"
-            : cap === 9  ? "claude-sonnet-4-6"
-                :              "claude-haiku-4-5";
+        // Verified Claude model names as of 2025-06
+        return cap === 10 ? "claude-opus-4-5"
+            : cap === 9  ? "claude-sonnet-4-5"
+                :              "claude-haiku-3-5";
     }
     if (platform === "gemini-cli" || platform === "antigravity") {
+        // Verified Gemini model names as of 2025-06
         return cap === 10 ? "gemini-2.5-pro"
             : cap === 9  ? "gemini-2.5-flash"
-                :              "gemini-2.5-flash-8b";
+                :              "gemini-2.5-flash-lite";
     }
-    // codex-cli
-    return cap === 10 ? "codex-1" : "o4-mini";
+    // codex-cli / OpenAI
+    return cap === 10 ? "o3" : "o4-mini";
 }
 
-/** Build a flat system prompt string from structured instructions */
-function buildSystemPrompt(ag: AgentDefinition, baseKnowledgeDir: string = path.join(getPackageRoot(), "templates/standards")): string {
+// ─────────────────────────────────────────────────────────────────────────────
+//  System Prompt Builder
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Builds a rich, enterprise-grade system prompt from structured instructions.
+ * Embeds governance document contents inline for agents that have knowledgeFiles.
+ */
+function buildSystemPrompt(
+    ag: AgentDefinition,
+    baseKnowledgeDir: string = path.join(getPackageRoot(), "templates/standards")
+): string {
     const lines: string[] = [
-        "# Identity",
+        `# 🎖️ ${ag.displayName} — Agent Enderun`,
+        "",
+        "## Identity",
         ag.instructions.identity,
         "",
-        "# Mission",
+        "## Mission",
         ag.instructions.mission,
         "",
-        "# Chain of Thought Protocol",
+        "## Role Scope",
+        `**Primary Role:** ${ag.role}`,
+        `**Authority Tier:** ${ag.tier} (Capability: ${ag.capability}/10)`,
+        "",
+        "## Chain of Thought Protocol",
+        "> Follow these steps in strict order for every task:",
+        "",
         ag.instructions.chainOfThought,
         "",
-        "# Discipline rules",
-        ...ag.instructions.rules.map(r => `- ${r}`),
+        "## Discipline Rules",
+        "> These are **non-negotiable** governance mandates. Violating any rule triggers an immediate task freeze.",
+        "",
+        ...ag.instructions.rules.map((r: string, i: number) => `${i + 1}. ${r}`),
+        "",
+        "## Enterprise Context",
+        "You are operating within a **multi-agent enterprise system** governed by the Agent Enderun framework.",
+        "All actions are traced, logged, and auditable. Every decision must be defensible and reversible.",
+        "- Always read PROJECT_MEMORY.md at session start for full context.",
+        "- Always pass the active **Trace ID** in all agent-to-agent messages.",
+        "- Never perform irreversible operations (schema drops, bulk deletes) without @manager approval.",
+        "- Prefer surgical edits (`replace_text`, `patch_file`) over full file rewrites.",
+        "- Escalate ambiguity to @manager instead of guessing.",
     ];
-    
+
     if (ag.instructions.knowledgeFiles?.length) {
-        lines.push("", "# Required reading (Standards Enforced)");
-        ag.instructions.knowledgeFiles.forEach(f => {
+        lines.push("", "## Governance Standards (Required Reading)");
+        lines.push("> Read and internalize the following standards before acting on any task.");
+        ag.instructions.knowledgeFiles.forEach((f: string) => {
             const filePath = path.join(baseKnowledgeDir, f);
             if (fs.existsSync(filePath)) {
-                lines.push(`\n## Content of ${f}:\n`, fs.readFileSync(filePath, "utf8"));
+                lines.push("", `### 📘 ${f}`, "", fs.readFileSync(filePath, "utf8").trim());
             } else {
-                lines.push(`- ${f} (File not found)`);
+                lines.push("", `### 📘 ${f}`, `> ⚠️ File not found at \`${filePath}\`. Run \`agent-enderun init\` to scaffold standards.`);
             }
         });
     }
+
     return lines.join("\n");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  CLAUDE CODE  →  .claude/agents/{name}.md
+//  Valid fields: name, description, model, tools, color
+//  Ref: https://docs.anthropic.com/en/docs/claude-code/sub-agents
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function toClaudeCodeMd(ag: AgentDefinition, baseKnowledgeDir?: string): string {
-    const tools = [...new Set(ag.tools.map(t => CLAUDE_TOOL_MAP[t] ?? t))];
+    const tools = [...new Set(ag.tools.map((t: string) => CLAUDE_TOOL_MAP[t] ?? t))];
     const model = resolveModel(ag.capability, "claude-code");
     const color = ag.tier === "supreme" ? "purple"
         : ag.tier === "recon"   ? "gray"
             :                         "blue";
 
+    // Only officially supported frontmatter fields
     const frontmatter = [
         "---",
         `name: ${ag.name}`,
         "description: >-",
-        `  ${ag.description} Use proactively for ${ag.role.toLowerCase()} tasks.`,
+        `  ${ag.description} Invoke proactively for ${ag.role.toLowerCase()} tasks in enterprise monorepo projects.`,
         `model: ${model}`,
         `tools: [${tools.map(t => `"${t}"`).join(", ")}]`,
-        `capability: ${ag.capability}`,
-        `tags: [${ag.tags.map(t => `"${t}"`).join(", ")}]`,
         `color: ${color}`,
         "---",
     ].join("\n");
@@ -183,20 +244,21 @@ export function toClaudeCodeMd(ag: AgentDefinition, baseKnowledgeDir?: string): 
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  GEMINI CLI  →  .gemini/agents/{name}.md
+//  Valid fields: name, description, model, tools (YAML list)
+//  Ref: https://ai.google.dev/gemini-api/docs/agents
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): string {
-    const tools = [...new Set(ag.tools.map(t => GEMINI_TOOL_MAP[t] ?? t))];
+    const tools = [...new Set(ag.tools.map((t: string) => GEMINI_TOOL_MAP[t] ?? t))];
     const model = resolveModel(ag.capability, "gemini-cli");
 
+    // Only officially supported frontmatter fields — no capability, no tags
     const frontmatter = [
         "---",
         `name: ${ag.name}`,
         "description: >-",
-        `  ${ag.description}`,
+        `  ${ag.description} Use for ${ag.role.toLowerCase()} tasks.`,
         `model: ${model}`,
-        `capability: ${ag.capability}`,
-        `tags: [${ag.tags.map(t => `"${t}"`).join(", ")}]`,
         "tools:",
         ...tools.map(t => `  - ${t}`),
         "---",
@@ -207,9 +269,21 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  ANTIGRAVITY CLI  →  .agents/{name}/agent.json
+//  Spec: Antigravity customAgentSpec JSON schema
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function toAntigravityJson(ag: AgentDefinition): string {
+export function toAntigravityJson(ag: AgentDefinition, baseKnowledgeDir?: string): string {
+    const knowledgeBase = baseKnowledgeDir ?? path.join(getPackageRoot(), "templates/standards");
+
+    // Embed actual file contents so the agent can read governance docs
+    const knowledgeSections = (ag.instructions.knowledgeFiles ?? []).map((f: string) => {
+        const filePath = path.join(knowledgeBase, f);
+        const content = fs.existsSync(filePath)
+            ? fs.readFileSync(filePath, "utf8").trim()
+            : `(${f} — file not found at build time)`;
+        return { title: `Required Reading — ${f}`, content };
+    });
+
     const payload = {
         name: ag.name,
         displayName: ag.displayName,
@@ -220,7 +294,7 @@ export function toAntigravityJson(ag: AgentDefinition): string {
                 systemPromptSections: [
                     {
                         title: "Identity & Mission",
-                        content: `${ag.instructions.identity}\n\n${ag.instructions.mission}`,
+                        content: `${ag.instructions.identity}\n\n**Mission:** ${ag.instructions.mission}`,
                     },
                     {
                         title: "Chain of Thought Protocol",
@@ -228,14 +302,19 @@ export function toAntigravityJson(ag: AgentDefinition): string {
                     },
                     {
                         title: "Discipline Rules",
-                        content: ag.instructions.rules.join("\n"),
+                        content: ag.instructions.rules.map((r: string, i: number) => `${i + 1}. ${r}`).join("\n"),
                     },
-                    ...(ag.instructions.knowledgeFiles?.length
-                        ? [{
-                            title: "Required Reading",
-                            content: ag.instructions.knowledgeFiles.join("\n"),
-                        }]
-                        : []),
+                    {
+                        title: "Enterprise Context",
+                        content: [
+                            "You are part of a multi-agent enterprise governance system.",
+                            "- Always include active Trace ID in all messages.",
+                            "- Read PROJECT_MEMORY.md at session start.",
+                            "- Prefer surgical edits over full file rewrites.",
+                            "- Escalate high-risk operations to @manager.",
+                        ].join("\n"),
+                    },
+                    ...knowledgeSections,
                 ],
                 toolNames: ag.tools,
             },
@@ -249,26 +328,26 @@ export const buildAgentJson = toAntigravityJson;
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  CODEX CLI (OpenAI)  →  .agents/{name}.md
+//  Valid fields: agent-type, display-name, when-to-use, model, allowed-tools
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): string {
     const model = resolveModel(ag.capability, "codex-cli");
-    const tools = [...new Set(ag.tools.map(t => {
-        if (["read_file","view_file","list_dir","grep_search","get_memory_insights","read_project_memory"].includes(t)) return "read";
-        if (["write_file","replace_text","batch_surgical_edit","patch_file","update_project_memory","log_agent_action"].includes(t)) return "write";
-        return "shell"; 
+    const tools = [...new Set(ag.tools.map((t: string) => {
+        if (["read_file","view_file","list_dir","grep_search","get_memory_insights","read_project_memory","get_project_map","get_project_gaps","get_framework_status"].includes(t)) return "read";
+        if (["write_file","replace_text","batch_surgical_edit","patch_file","update_project_memory","log_agent_action","acquire_lock","release_lock","register_agent","update_contract_hash"].includes(t)) return "write";
+        return "shell";
     }))];
 
+    // Only officially supported Codex CLI frontmatter fields — no tier, no capability
     const frontmatter = [
         "---",
         `agent-type: "${ag.name}"`,
         `display-name: "${ag.displayName}"`,
         "when-to-use: >-",
-        `  Use for ${ag.role.toLowerCase()}. ${ag.description}`,
+        `  Invoke for ${ag.role.toLowerCase()} tasks. ${ag.description}`,
         `model: ${model}`,
         `allowed-tools: [${tools.map(t => `"${t}"`).join(", ")}]`,
-        `tier: ${ag.tier}`,
-        `capability: ${ag.capability}`,
         "---",
     ].join("\n");
 
@@ -277,28 +356,16 @@ export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): strin
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  CURSOR IDE  →  .cursor/rules/{name}.mdc
+//  Valid fields: description, globs, alwaysApply
+//  Ref: https://docs.cursor.com/context/rules
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GLOB_MAP: Record<string, string> = {
-    backend: "apps/backend/**/*",
-    frontend: "apps/web/**/*",
-    database: "apps/backend/src/database/**/*",
-    mobile: "apps/mobile/**/*",
-    native: "apps/native/**/*",
-    quality: "*",
-    security: "*",
-    devops: "*",
-    explorer: "*",
-    git: "*",
-    analyst: "*",
-    manager: "*",
-};
-
 export function toCursorMdc(ag: AgentDefinition, baseKnowledgeDir?: string): string {
-    const glob = GLOB_MAP[ag.name] || "**/*";
+    const glob = CURSOR_AGENT_GLOBS[ag.name] || "**/*";
+    // Only officially supported Cursor MDC frontmatter fields
     const frontmatter = [
         "---",
-        `description: Agent Enderun — @${ag.name} rules for ${ag.displayName}. ${ag.description.slice(0, 100)}`,
+        `description: "${ag.displayName} — ${ag.description.slice(0, 120).replace(/"/g, "'")}"`,
         `globs: ${glob}`,
         "alwaysApply: false",
         "---",

@@ -64,15 +64,10 @@ describe("Hermes Message Protocol & Orchestration", () => {
             "@frontend": { state: "EXECUTING", task: "Building dashboard", lastUpdated: pastTime }
         });
 
-        // Run orchestration loop
-        // We need to bypass the STATUS.md logic in orchestrate.ts by mocking it or 
-        // updating the implementation to check status.json.
-        // For now, let's fix the test logic to align with what the code *should* do.
-        await orchestrateCommand();
+        // Run a single orchestration iteration (avoids infinite loop in tests)
+        await orchestrateCommand({ maxIterations: 1 });
 
         const statuses = memoryUtils.readStatus();
-        // Since we didn't update orchestrate.ts to read status.json, 
-        // the code won't see it yet. I need to fix orchestrate.ts.
         expect(statuses["@frontend"].state).toBe("BLOCKED");
     });
 });

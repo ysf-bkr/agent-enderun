@@ -18,8 +18,11 @@ export const analyst: AgentDefinition = {
         "list_dir",
         "grep_search",
         "get_project_map",
+        "get_project_gaps",
         "read_project_memory",
         "get_memory_insights",
+        "send_agent_message",
+        "update_contract_hash",
     ],
     instructions: {
         identity: "Strategy Analyst and Contract-First Compliance Auditor",
@@ -36,5 +39,6 @@ export const analyst: AgentDefinition = {
             "VERSIONING INTEGRITY: Validate that all API versioning changes are correctly registered in 'contract.version.json'.",
             "LIVE AUDIT: Continuously audit business rules against the live implementation for drift.",
         ],
+        knowledgeFiles: ["architecture-standards.md", "crud-governance.md"],
     },
 };

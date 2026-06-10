@@ -134,20 +134,21 @@ export const DEFAULT_MONOREPO_PATHS = {
     tests: "tests",
 } as const;
 
-/** Cursor rule globs per agent role (monorepo layout). */
+/** Cursor rule globs per agent role (enterprise monorepo layout). */
 export const CURSOR_AGENT_GLOBS: Record<string, string> = {
-    backend: `${DEFAULT_MONOREPO_PATHS.backend}/**/*`,
-    frontend: `${DEFAULT_MONOREPO_PATHS.frontend}/**/*`,
-    database: `${DEFAULT_MONOREPO_PATHS.backend}/src/database/**/*`,
-    mobile: `${DEFAULT_MONOREPO_PATHS.mobile}/**/*`,
-    native: "apps/native/**/*",
-    quality: "*",
-    security: "*",
-    devops: "*",
-    explorer: "*",
-    git: "*",
-    analyst: "*",
-    manager: "*",
+    manager:   "**/*",
+    security:  "**/*",
+    architect: "**/*",
+    backend:   `${DEFAULT_MONOREPO_PATHS.backend}/**/*`,
+    frontend:  `${DEFAULT_MONOREPO_PATHS.frontend}/**/*`,
+    mobile:    `${DEFAULT_MONOREPO_PATHS.mobile}/**/*`,
+    native:    "apps/native/**/*",
+    database:  `${DEFAULT_MONOREPO_PATHS.backend}/src/database/**/*`,
+    devops:    "{.github,docker,infra,scripts,*.yml,*.yaml,Dockerfile*}",
+    quality:   "**/*",
+    analyst:   "{docs,specs,contracts}/**/*",
+    explorer:  "**/*",
+    git:       "**/*",
 };
 
 // ─── MCP & environment ──────────────────────────────────────────────────────

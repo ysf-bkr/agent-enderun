@@ -28,11 +28,16 @@ export type HermesMessage = z.infer<typeof HermesMessageSchema>;
 let agentStatusCache: Record<string, { state: string; task: string; lastUpdated?: string }> = {};
 let isLooping = false;
 
-export async function orchestrateCommand() {
+export async function orchestrateCommand(options?: { maxIterations?: number }) {
     UI.intent("Hermes Message Broker", "Starting the live agent orchestration loop...");
 
     const frameworkDir = getFrameworkDir();
     const messagesDir = path.join(frameworkDir, "messages");
+    const maxIterations = options?.maxIterations;
+    let iterationCount = 0;
+
+    // Reset in-memory cache so each invocation starts fresh (important for test isolation)
+    agentStatusCache = {};
 
     // Graceful Shutdown Handling
     const shutdown = async () => {
@@ -93,15 +98,35 @@ export async function orchestrateCommand() {
                                 const parsed = JSON.parse(line);
                                 const msg = HermesMessageSchema.parse(parsed);
 
-                                // Contract Validation
+                                // Contract Validation for structured task messages
+                                // ACTION & DELEGATION must be valid TaskRequest payloads
+                                // SUBTASK must have a parentId and valid task payload
+                                // ALERT must have a content string (free-form, no schema required)
                                 if (msg.category === "ACTION" || msg.category === "DELEGATION") {
                                     try {
                                         const payload = JSON.parse(msg.content);
                                         TaskRequestSchema.parse(payload);
                                     } catch (e) {
-                                        UI.error(`Invalid task contract payload: ${(e as Error).message}`);
+                                        UI.error(`Invalid task contract payload in ${msg.category} from @${msg.from}: ${(e as Error).message}`);
                                         return; // Skip invalid message
                                     }
+                                }
+                                if (msg.category === "SUBTASK") {
+                                    if (!msg.parentId) {
+                                        UI.error(`SUBTASK from @${msg.from} is missing required parentId — skipping.`);
+                                        return;
+                                    }
+                                    try {
+                                        const payload = JSON.parse(msg.content);
+                                        TaskRequestSchema.parse(payload);
+                                    } catch (e) {
+                                        UI.error(`Invalid SUBTASK payload from @${msg.from}: ${(e as Error).message}`);
+                                        return;
+                                    }
+                                }
+                                if (msg.category === "ALERT" && !msg.content.trim()) {
+                                    UI.error(`ALERT from @${msg.from} has empty content — skipping.`);
+                                    return;
                                 }
 
                                 // A message is actionable if it's pending, or if it's been approved.
@@ -227,6 +252,13 @@ export async function orchestrateCommand() {
             logger.debug("Hermes global loop failure", globalLoopErr);
         }
 
+        iterationCount++;
+        // If maxIterations is set (e.g. in tests), stop after N iterations without sleeping
+        if (maxIterations !== undefined && iterationCount >= maxIterations) {
+            isLooping = false;
+            break;
+        }
+
         // Prevent 100% CPU and provide breathing room for I/O
         await sleep(2000);
     }
@@ -295,7 +327,12 @@ export async function sendMessage(args: {
 
     try {
         const defaultPriority = (args.category === "ALERT" || args.category === "ACTION") ? "HIGH" : "NORMAL";
-        const requiresApproval = args.requiresApproval !== undefined ? args.requiresApproval : (args.category === "ALERT" || args.category === "ACTION");
+        // Only ALERT requires manager approval by default.
+        // ACTION messages flow freely unless the caller explicitly sets requiresApproval=true.
+        // This prevents workflow blockage on normal agent-to-agent task delegation.
+        const requiresApproval = args.requiresApproval !== undefined
+            ? args.requiresApproval
+            : args.category === "ALERT";
 
         const message: HermesMessage = {
             timestamp: new Date().toISOString(),

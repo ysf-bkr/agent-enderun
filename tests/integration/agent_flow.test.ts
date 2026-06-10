@@ -51,8 +51,8 @@ describe("Agent Integration Flow", () => {
             traceId: traceId
         });
 
-        // 2. Orchestrator processes the task
-        await orchestrateCommand();
+        // 2. Orchestrator processes the task (single iteration for test determinism)
+        await orchestrateCommand({ maxIterations: 1 });
 
         // 3. Verify Backend status changed to EXECUTING
         const status = memoryUtils.readStatus();

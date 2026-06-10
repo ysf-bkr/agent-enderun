@@ -19,6 +19,9 @@ export const manager: AgentDefinition = {
         "read_project_memory",
         "get_memory_insights",
         "update_project_memory",
+        "acquire_lock",
+        "release_lock",
+        "log_agent_action",
         "get_project_gaps",
         "get_project_map",
         "audit_dependencies",
@@ -49,6 +52,8 @@ export const manager: AgentDefinition = {
             "GAP ANALYSIS: Run 'get_project_gaps' after each phase — unfinished logic is a breach of discipline.",
             "SYSTEM OBSERVABILITY: Periodically invoke 'get_system_health' and 'check_active_ports' to verify environment stability.",
             "MEMORY INTEGRITY: Synchronize 'PROJECT_MEMORY.md' after every single turn. Memory drift is treason.",
+            "LOCKING PROTOCOL: Always acquire a lock via 'acquire_lock' on 'memory' resource before writing to PROJECT_MEMORY.md. Release immediately after write.",
         ],
+        knowledgeFiles: ["governance-standards.md"],
     },
 };

@@ -1,6 +1,6 @@
 # 🏛️ Agent Enderun — The Supreme AI Governance & Autonomous Orchestration Framework
 
-> **Stable Release:** v1.11.0 (Enterprise Orchestration Ready) — Build Compile: Clean | Type-Safety: 100% Verified | AL Compliance: 13/13 Agents
+> **Stable Release:** v1.11.1 (Enterprise Orchestration Ready) — Build Compile: Clean | Type-Safety: 100% Verified | AL Compliance: 13/13 Agents
 
 > **Author:** Yusuf BEKAR
 > **Trace ID:** `01HGT8J5E2N0W0W0W0W0W0W0W5`
@@ -31,7 +31,7 @@ Yapay zeka kodlama yardımcıları (Claude Code, Gemini CLI, Grok Build vb.) gel
 
 ### 📦 Güncel Sürüm / Current Release
 
-**v1.11.0** — Kararlı Sürüm (Performans & Standartlar).
+**v1.11.1** — Kararlı Sürüm (Performans & Standartlar).
 *   **TR:** Yeni enterprise standartlar eklendi (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Orkestrasyon döngüsü bellek içi önbellekleme (in-memory cache) ile optimize edildi. Planlama komutu (`plan`) eklendi.
 *   **EN:** Added enterprise standards (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Optimized orchestration loop with in-memory caching. Added planning command (`plan`).
 
@@ -189,7 +189,7 @@ As AI coding assistants (Claude Code, Gemini CLI, Grok Build, etc.) become incre
 
 ### 📦 Current Release / Güncel Sürüm
 
-**v1.11.0** — Stable Release (Performance & Standards).
+**v1.11.1** — Stable Release (Performance & Standards).
 *   **EN:** Added enterprise standards (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Optimized orchestration loop with in-memory caching. Added planning command (`plan`).
 *   **TR:** Yeni enterprise standartlar eklendi (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Orkestrasyon döngüsü bellek içi önbellekleme (in-memory cache) ile optimize edildi. Planlama komutu (`plan`) eklendi.
 
@@ -315,4 +315,4 @@ Execute commands via `agent-enderun` (or `npx agent-enderun`):
 
 ---
 
-Developed with absolute discipline | Developer **Yusuf BEKAR** | Framework Version **v1.11.0** — Enterprise standards ready. Bloat removed. Corporate-ready.
+Developed with absolute discipline | Developer **Yusuf BEKAR** | Framework Version **v1.11.1** — Enterprise standards ready. Bloat removed. Corporate-ready.

@@ -48,6 +48,10 @@ export function scaffoldAgents(
                 case "gemini":
                     content = toGeminiCliMd(agent, baseKnowledgeDir);
                     break;
+                case "grok":
+                    // Grok uses same Gemini-compatible YAML format
+                    content = toGeminiCliMd(agent, baseKnowledgeDir);
+                    break;
                 case "claude":
                     content = toClaudeCodeMd(agent, baseKnowledgeDir);
                     break;
@@ -62,7 +66,7 @@ export function scaffoldAgents(
                     const agentDir = path.join(destAgentsDir, agent.name);
                     if (!dryRun) fs.mkdirSync(agentDir, { recursive: true });
                     
-                    content = toAntigravityJson(agent);
+                    content = toAntigravityJson(agent, baseKnowledgeDir);
                     fileName = path.join(agent.name, "agent.json");
                     
                     secondaryContent = `# 🎖️ Agent Enderun — @${agent.name}\n\n${agent.instructions.identity}\n\n${agent.instructions.mission}`;
