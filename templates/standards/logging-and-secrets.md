@@ -31,4 +31,4 @@ This document defines the logging discipline and sensitive data (secret) managem
     - Real user data (Emails, Phone Numbers, Full Names, National IDs) must NEVER be logged or stored in agent memories.
     - If a task requires processing PII, use anonymized placeholders or unique hashes in logs.
     - **@security** agent must audit any new log entry for potential PII leakage.
-- **Zero-Trust Memory:** Ajan hafızaları (PROJECT_MEMORY.md) asla gerçek müşteri verisi içermemelidir; sadece teknik meta-data ve mimari kararlar saklanmalıdır.
+- **Zero-Trust Memory:** Agent memories (PROJECT_MEMORY.md) must never contain real customer data; only technical metadata and architectural decisions must be stored.

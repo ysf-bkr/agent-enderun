@@ -11,5 +11,5 @@ This document defines the requirements for logging, tracing, and observability w
 - **Immutable Logs:** Audit logs should be appended only and never modified or deleted.
 
 ## 3. Monitoring
-- **Health Checks:** Ajanlar periyodik olarak `get_system_health` aracını çağırmalıdır.
+- **Health Checks:** Agents must periodically invoke the `get_system_health` tool.
 - **Alerting:** Critical errors or timeouts must immediately trigger an `ALERT` message to the `@manager` agent for escalation.

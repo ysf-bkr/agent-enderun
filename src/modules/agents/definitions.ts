@@ -269,8 +269,6 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
     const tools = [...new Set(ag.tools.map((t: string) => GEMINI_TOOL_MAP[t] ?? t))];
     const model = resolveModel(ag.capability, "gemini-cli");
 
-    // Only officially supported frontmatter fields — no capability, no tags, no color.
-    // Gemini CLI's strict Zod validator rejects any unrecognized keys.
     const frontmatter = [
         "---",
         `name: ${ag.name}`,
@@ -282,9 +280,16 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
         "---",
     ].join("\n");
 
-    // stripMetaComments=true: Gemini CLI's validator misparses <!-- tags: ... --> HTML
-    // comments at the top of the body as unrecognized frontmatter keys.
-    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir, true)}`;
+    const body = buildSystemPrompt(ag, baseKnowledgeDir, true);
+
+    const metaFooter = [
+        "",
+        `<!-- name: ${ag.name} -->`,
+        `<!-- capability: ${ag.capability} -->`,
+        `<!-- tags: ${JSON.stringify(ag.tags)} -->`,
+    ].join("\n");
+
+    return `${frontmatter}\n\n${body}${metaFooter}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -359,7 +364,6 @@ export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): strin
         return "shell";
     }))];
 
-    // Only officially supported Codex CLI frontmatter fields — no tier, no capability
     const frontmatter = [
         "---",
         `agent-type: "${ag.name}"`,
@@ -371,9 +375,16 @@ export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): strin
         "---",
     ].join("\n");
 
-    // stripMetaComments=true: Codex CLI may also have strict frontmatter validation;
-    // HTML comment metadata is Enderun-internal and not needed by the platform.
-    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir, true)}`;
+    const body = buildSystemPrompt(ag, baseKnowledgeDir, true);
+
+    const metaFooter = [
+        "",
+        `<!-- name: ${ag.name} -->`,
+        `<!-- capability: ${ag.capability} -->`,
+        `<!-- tags: ${JSON.stringify(ag.tags)} -->`,
+    ].join("\n");
+
+    return `${frontmatter}\n\n${body}${metaFooter}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
