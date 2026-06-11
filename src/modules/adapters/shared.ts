@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import os from "os";
+import { execSync } from "child_process";
 import { writeJsonFile, writeTextFile } from "../../shared/fs.js";
 import { ALL_AGENTS, toAntigravityJson } from "../agents/definitions.js";
 import { CORE_SKILLS } from "../skills/definitions.js";
@@ -39,16 +40,31 @@ export function registerGlobalAntigravityPlugins(mcpBlock: unknown): void {
             // Scaffold 13 agents
             const agentsBaseDir = path.join(globalPluginDir, "agents");
             fs.mkdirSync(agentsBaseDir, { recursive: true });
+
+            // Also write directly to ~/.gemini/antigravity-cli/agents/ so the CLI's
+            // workspace/global agent discovery finds them without the plugins/ prefix.
+            const globalAgentsDir = path.join(globalDir, "agents");
+            fs.mkdirSync(globalAgentsDir, { recursive: true });
+
             for (const ag of ALL_AGENTS) {
                 const agentJson = toAntigravityJson(ag, baseKnowledgeDir);
 
-                // 1. Nested format (agents/{agent_name}/agent.json)
+                // 1. Nested format inside plugin: plugins/agent-enderun/agents/{name}/agent.json
                 const nestedAgentDir = path.join(agentsBaseDir, ag.name);
                 fs.mkdirSync(nestedAgentDir, { recursive: true });
                 writeTextFile(path.join(nestedAgentDir, "agent.json"), agentJson);
 
-                // 2. Direct flat format (agents/{agent_name}.json)
+                // 2. Flat format inside plugin: plugins/agent-enderun/agents/{name}.json
                 writeTextFile(path.join(agentsBaseDir, `${ag.name}.json`), agentJson);
+
+                // 3. Direct global agents root — THIS is what Antigravity CLI reads:
+                //    ~/.gemini/antigravity-cli/agents/{name}/agent.json
+                const globalNestedDir = path.join(globalAgentsDir, ag.name);
+                fs.mkdirSync(globalNestedDir, { recursive: true });
+                writeTextFile(path.join(globalNestedDir, "agent.json"), agentJson);
+
+                // 4. Flat global format as fallback
+                writeTextFile(path.join(globalAgentsDir, `${ag.name}.json`), agentJson);
             }
 
             // Scaffold skills
@@ -85,12 +101,16 @@ ${ag.instructions.rules.map(r => `- ${r}`).join("\n")}
             }
 
             // Scaffold optional empty hooks.json
-            writeJsonFile(path.join(globalPluginDir, "hooks.json"), {
-                preTool: [],
-                postTool: []
-            });
+            writeJsonFile(path.join(globalPluginDir, "hooks.json"), {});
 
             console.warn(`✅ Antigravity Plugin registered → ${globalPluginDir}/`);
+
+            try {
+                execSync(`agy plugin install "${globalPluginDir}"`, { stdio: "ignore" });
+                console.warn(`✅ Antigravity Plugin installed in CLI.`);
+            } catch {
+                // Ignore if agy is not in PATH or fails
+            }
 
         } catch (e) {
             console.warn(`⚠️ Failed to register plugin/MCP in ${globalDir}:`, e);

@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { generateULID } from "../utils/time.js";
 import { UI } from "../utils/ui.js";
+import { writeJsonFile } from "../utils/fs.js";
 
 /**
  * Reads ALL markdown files from the docs/ directory and creates
@@ -92,7 +93,7 @@ export async function planCommand() {
             tasks: taskCount,
             preview: content.substring(0, 500),
         };
-        fs.writeFileSync(taskFile, JSON.stringify(taskData, null, 2));
+        writeJsonFile(taskFile, taskData);
     }
 
     // Log available standards

@@ -78,3 +78,4 @@ agent-enderun-*.tgz
 .gemini/antigravity-cli/*.lock
 .gemini/antigravity-cli/memory/
 # Agent Enderun
+tests/test-init/

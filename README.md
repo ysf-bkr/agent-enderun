@@ -106,6 +106,10 @@ npx agent-enderun init gemini
     ```bash
     npx agent-enderun init gemini --unified
     ```
+*   **Etkileşimsiz Kurulum (Otomatik Onay):** Tüm yapılandırma adımlarını etkileşimsiz modda otomatik onaylayıp hızlıca tamamlamak için `--yes` veya `-y` bayrağını kullanabilirsiniz:
+    ```bash
+    npx agent-enderun init gemini --unified --yes
+    ```
 
 #### 2. Claude Adaptörü Kurulumu (Claude Code & Desktop)
 Claude Desktop uygulamasında ve Claude Code CLI aracında otonom orduyu aktif etmek için:
@@ -152,7 +156,7 @@ Sistem artık tüm zekasını ve persistence verilerini projenin kök dizininde 
 > [!TIP]
 > **Kullanıcı genellikle CLI komutları yazmaz.** Doğrudan AI asistanınıza (Claude Code, Gemini, Grok, Cursor) konuşarak çalışırsınız. AI asistanı MCP araçlarını kullanarak komutları sizin yerinize çalıştırır.
 
-*   **`init [adapter] [--unified]`**: Seçilen adaptörü kurar. `--unified` kullanılırsa tüm asistan şimleri doğrudan `.enderun` altında birleşir; klasör kalabalığı sıfırlanır. Init sonrası **otomatik AL (Agent Lifecycle) validation** çalıştırılır.
+*   **`init [adapter] [--unified] [--yes|-y]`**: Seçilen adaptörü kurar. `--unified` kullanılırsa tüm asistan şimleri doğrudan `.enderun` altında birleşir; klasör kalabalığı sıfırlanır. `--yes` veya `-y` kullanılırsa kurulum etkileşimsiz (non-interactive) modda otomatik onaylanarak varsayılan değerlerle tamamlanır. Init sonrası **otomatik AL (Agent Lifecycle) validation** çalıştırılır.
 *   **`status`**: Projenin aktif fazını (Phase 0 - 4), aktif Trace ID'sini ve uzman ajanların durumlarını listeler.
 *   **`check`**: Anayasal uyumluluk denetimlerini + **otomatik AL Army Validation** (stateMachine + tags) gerçekleştirir.
 *   **`validate` / `validate-army` / `check:al`**: Bağımsız Agent Lifecycle (AL) ordu validasyonu çalıştırır.
@@ -264,6 +268,10 @@ npx agent-enderun init gemini
     ```bash
     npx agent-enderun init gemini --unified
     ```
+*   **Non-interactive Setup (Auto-approve):** Use `--yes` or `-y` to bypass all interactive prompts and initialize using the default configurations:
+    ```bash
+    npx agent-enderun init gemini --unified --yes
+    ```
 
 #### 2. Claude Adapter (Claude Code CLI & Desktop App)
 Bootstrap the framework for Anthropic's Claude:
@@ -303,7 +311,7 @@ npx agent-enderun init antigravity-cli
 
 Execute commands via `agent-enderun` (or `npx agent-enderun`):
 
-*   **`init [adapter] [--unified]`**: Scaffold framework directories and register local/global MCP server instances.
+*   **`init [adapter] [--unified] [--yes|-y]`**: Scaffold framework directories and register local/global MCP server instances. Use `--yes` or `-y` to run in non-interactive mode with default settings.
 *   **`status`**: Output active Phase (0-4), current active Trace ID, and agent capability logs.
 *   **`check`**: Run a thorough framework integrity, folder alignment, and constitutional compliance check.
 *   **`trace:new [desc] [agent] [priority]`**: Launch a new traceable task chain stamped with a unique ULID.

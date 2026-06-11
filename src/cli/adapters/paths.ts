@@ -50,7 +50,8 @@ export function resolveAgentsDir(
         case "codex":
             return { agentsDir: pathJoin(base, "instructions"), agentsExt: ".md", nestedAntigravity: false };
         case "antigravity-cli":
-            return { agentsDir: pathJoin(base, "agents"), agentsExt: ".md", nestedAntigravity: true };
+            // Antigravity CLI expects workspace agents at .agents/agents/{agent_name}/agent.json
+            return { agentsDir: pathJoin(aiToolDir, "agents"), agentsExt: ".json", nestedAntigravity: true };
         default:
             return { agentsDir: pathJoin(base, "agents"), agentsExt: ".md", nestedAntigravity: false };
     }

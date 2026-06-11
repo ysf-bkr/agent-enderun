@@ -91,17 +91,21 @@ const CLAUDE_TOOL_MAP: Record<string, string> = {
 };
 
 /**
- * Gemini CLI built-in tool names.
- * Reference: https://ai.google.dev/gemini-api/docs/function-calling
+ * Gemini CLI built-in tool names (canonical names validated by Gemini CLI agent schema).
+ * Reference: https://github.com/google-gemini/gemini-cli
+ *
+ * Valid Gemini CLI tool names:
+ *   read_file, write_file, replace, grep_search, glob,
+ *   list_directory, run_shell_command
  */
 const GEMINI_TOOL_MAP: Record<string, string> = {
     read_file:             "read_file",
     write_file:            "write_file",
-    replace_text:          "replace_in_file",
-    batch_surgical_edit:   "replace_in_file",
-    patch_file:            "replace_in_file",
+    replace_text:          "replace",           // ✅ NOT replace_in_file
+    batch_surgical_edit:   "replace",           // ✅ NOT replace_in_file
+    patch_file:            "replace",           // ✅ NOT replace_in_file
     list_dir:              "list_directory",
-    grep_search:           "search_file_content",
+    grep_search:           "grep_search",       // ✅ NOT search_file_content
     run_shell_command:     "run_shell_command",
     view_file:             "read_file",
     run_tests:             "run_shell_command",
@@ -160,12 +164,25 @@ function resolveModel(
 /**
  * Builds a rich, enterprise-grade system prompt from structured instructions.
  * Embeds governance document contents inline for agents that have knowledgeFiles.
+ *
+ * @param stripMetaComments - When true, skips the HTML meta-comment header block
+ *   (name/capability/tags). Set to true for Gemini CLI and Grok, whose strict
+ *   frontmatter validators may misinterpret HTML comments in the document body
+ *   as unrecognized YAML keys and reject the agent file entirely.
  */
 function buildSystemPrompt(
     ag: AgentDefinition,
-    baseKnowledgeDir: string = path.join(getPackageRoot(), "templates/standards")
+    baseKnowledgeDir: string = path.join(getPackageRoot(), "templates/standards"),
+    stripMetaComments = false,
 ): string {
+    const metaHeader = stripMetaComments ? [] : [
+        `<!-- name: ${ag.name} -->`,
+        `<!-- capability: ${ag.capability} -->`,
+        `<!-- tags: ${JSON.stringify(ag.tags)} -->`,
+        "",
+    ];
     const lines: string[] = [
+        ...metaHeader,
         `# 🎖️ ${ag.displayName} — Agent Enderun`,
         "",
         "## Identity",
@@ -252,7 +269,8 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
     const tools = [...new Set(ag.tools.map((t: string) => GEMINI_TOOL_MAP[t] ?? t))];
     const model = resolveModel(ag.capability, "gemini-cli");
 
-    // Only officially supported frontmatter fields — no capability, no tags
+    // Only officially supported frontmatter fields — no capability, no tags, no color.
+    // Gemini CLI's strict Zod validator rejects any unrecognized keys.
     const frontmatter = [
         "---",
         `name: ${ag.name}`,
@@ -264,7 +282,9 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
         "---",
     ].join("\n");
 
-    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir)}`;
+    // stripMetaComments=true: Gemini CLI's validator misparses <!-- tags: ... --> HTML
+    // comments at the top of the body as unrecognized frontmatter keys.
+    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir, true)}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -351,7 +371,9 @@ export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): strin
         "---",
     ].join("\n");
 
-    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir)}`;
+    // stripMetaComments=true: Codex CLI may also have strict frontmatter validation;
+    // HTML comment metadata is Enderun-internal and not needed by the platform.
+    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir, true)}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

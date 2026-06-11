@@ -34,6 +34,9 @@ This document outlines the strict ESLint coding standards for Agent Enderun proj
     writeTextFile(path.join(knowledgePath, "eslint-standards.md"), eslintStandardsContent);
 
     const standards = [
+        // ── Supreme Governance (required by @manager, @security, @architect) ──────
+        { file: "governance-standards.md", template: "templates/standards/governance-standards.md", default: "# 🎖️ Agent Enderun — Governance & Nizam Standards" },
+        // ── Core Engineering Standards ────────────────────────────────────────────
         { file: "crud-governance.md", template: "templates/standards/crud-governance.md", default: "# 🏛️ Corporate CRUD and Governance Standards" },
         { file: "architecture-standards.md", template: "templates/standards/architecture-standards.md", default: "# 📐 Corporate Architecture Standards" },
         { file: "frontend-standards.md", template: "templates/standards/frontend-standards.md", default: "# 🎨 Corporate Frontend Standards" },

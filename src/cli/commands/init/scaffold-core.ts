@@ -92,12 +92,18 @@ export function scaffoldShims(
     unified: boolean = false
 ) {
     for (const [name, content] of Object.entries(SHIM_TEMPLATES)) {
-        const isSelectedAdapter = name.toLowerCase() === adapterId.split("-")[0] || name === adapterId;
+        // Normalize: "antigravity-cli" template key needs exact match or prefix match
+        const isSelectedAdapter = name === adapterId ||
+            name.toLowerCase() === adapterId.split("-")[0].toLowerCase();
         
         if (unified || isSelectedAdapter) {
             const shimContent = remapFrameworkContent(content, coreDir, adapterId);
+            // In unified mode, each adapter writes its OWN shimFile name.
+            // In single-adapter mode, use selected adapter's shimFile.
             const shimAdapter = ADAPTERS[name as AdapterId] || adapter;
-            const shimFileName = (unified && !isSelectedAdapter) ? (shimAdapter.shimFile || `${name.toUpperCase()}.md`) : (adapter.shimFile || `${name.toUpperCase()}.md`);
+            const shimFileName = (unified && !isSelectedAdapter)
+                ? (shimAdapter.shimFile || `${name.toUpperCase()}.md`)   // each adapter's own file
+                : (adapter.shimFile || `${name.toUpperCase()}.md`);       // selected adapter's file
             
             if (!dryRun) writeTextFile(path.join(projectRoot, shimFileName), shimContent);
             if (isSelectedAdapter) {

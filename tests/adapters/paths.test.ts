@@ -33,7 +33,7 @@ describe("Adapter Paths", () => {
             expect(resolveAgentsDir("gemini", true).agentsDir).toBe(".agents/gemini/agents");
             expect(resolveAgentsDir("cursor", true).agentsDir).toBe(".agents/cursor/rules");
             expect(resolveAgentsDir("codex", true).agentsDir).toBe(".agents/codex/instructions");
-            expect(resolveAgentsDir("antigravity-cli", true).agentsDir).toBe(".agents/antigravity/agents");
+            expect(resolveAgentsDir("antigravity-cli", true).agentsDir).toBe(".agents/agents");
         });
 
         it("should expose a layout base for every adapter slug", () => {
@@ -53,11 +53,11 @@ describe("Adapter Paths", () => {
         });
 
         it("should find nested antigravity agent.json", () => {
-            const agentDir = path.join(tempDir, ".agents/antigravity/agents/manager");
+            const agentDir = path.join(tempDir, ".agents/agents/manager");
             fs.mkdirSync(agentDir, { recursive: true });
             fs.writeFileSync(path.join(agentDir, "agent.json"), "{}");
 
-            expect(findAgentInstruction(tempDir, "manager")).toBe(".agents/antigravity/agents/manager/agent.json");
+            expect(findAgentInstruction(tempDir, "manager")).toBe(".agents/agents/manager/agent.json");
         });
     });
 

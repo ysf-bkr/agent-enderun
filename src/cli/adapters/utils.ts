@@ -46,9 +46,9 @@ export function remapFrameworkContent(
         if (adapterId === "antigravity-cli") {
             agentFolder = "agents";
             knowledgeFolder = "rules";
-        } else if (adapterId === "grok") {
-            agentFolder = "plugins";
         }
+        // Note: Grok uses the same directory structure as Gemini (".grok/agents").
+        // No override needed — default agentFolder = "agents" is correct.
     }
 
     const frameworkPattern = ".enderun/";
