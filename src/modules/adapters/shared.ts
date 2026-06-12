@@ -6,6 +6,7 @@ import { writeJsonFile, writeTextFile } from "../../shared/fs.js";
 import { ALL_AGENTS, toAntigravityJson } from "../agents/definitions.js";
 import { CORE_SKILLS } from "../skills/definitions.js";
 import { getPackageRoot } from "../../cli/utils/pkg.js";
+import { logger } from "../../shared/logger.js";
 
 export function registerGlobalAntigravityPlugins(mcpBlock: unknown): void {
     // Allow overriding via env var for different OS/Gemini CLI versions
@@ -20,7 +21,7 @@ export function registerGlobalAntigravityPlugins(mcpBlock: unknown): void {
             fs.mkdirSync(globalDir, { recursive: true });
             writeJsonFile(path.join(globalDir, "mcp.json"), mcpBlock);
             writeJsonFile(path.join(globalDir, "mcp_config.json"), mcpBlock);
-            console.warn(`✅ Antigravity MCP registered → ${globalDir}/`);
+            logger.info(`Antigravity MCP registered → ${globalDir}/`);
 
             // Global Plugin configuration under plugins/agent-enderun/
             const globalPluginDir = path.join(globalDir, "plugins/agent-enderun");
@@ -103,17 +104,17 @@ ${ag.instructions.rules.map(r => `- ${r}`).join("\n")}
             // Scaffold optional empty hooks.json
             writeJsonFile(path.join(globalPluginDir, "hooks.json"), {});
 
-            console.warn(`✅ Antigravity Plugin registered → ${globalPluginDir}/`);
+            logger.info(`Antigravity Plugin registered → ${globalPluginDir}/`);
 
             try {
                 execSync(`agy plugin install "${globalPluginDir}"`, { stdio: "ignore" });
-                console.warn(`✅ Antigravity Plugin installed in CLI.`);
+                logger.info("Antigravity Plugin installed in CLI.");
             } catch {
                 // Ignore if agy is not in PATH or fails
             }
 
         } catch (e) {
-            console.warn(`⚠️ Failed to register plugin/MCP in ${globalDir}:`, e);
+            logger.warn(`Failed to register plugin/MCP in ${globalDir}`, e);
         }
     }
 }

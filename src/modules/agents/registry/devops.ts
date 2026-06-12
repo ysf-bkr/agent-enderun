@@ -39,6 +39,6 @@ export const devops: AgentDefinition = {
             "ENVIRONMENT ISOLATION: All variables managed via '.env' — hardcoded secrets trigger immediate escalation.",
             "NO UNTRACKED DEPLOYMENTS: Every deployment must be declared, versioned, and traceable.",
         ],
-        knowledgeFiles: ["deployment-standards.md"],
+        knowledgeFiles: ["deployment-standards.md", "github-actions-standards.md", "observability-standards.md", "logging-and-secrets.md"],
     },
 };

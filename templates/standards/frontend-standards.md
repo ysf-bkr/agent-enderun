@@ -2,8 +2,13 @@
 
 This document defines the UI/UX standards for projects managed by Agent Enderun. All interfaces must comply with "Mobile-First", "Fluid Responsive", and "Cross-Device Adaptive" principles.
 
-## 1. Design System: Panda CSS & Tailwind Integration
-- **Zero UI Library:** Heavy external UI libraries like Ant Design or MUI are not used. All styles are written with type-safe **Panda CSS** or structured **Tailwind CSS**.
+## 1. Zero UI Library Policy (Supreme Mandate)
+- **NO Third-Party UI Frameworks:** Usage of `@chakra-ui`, `mui`, `@shadcn`, `antd`, or similar pre-built component libraries is **STRICTLY FORBIDDEN**.
+- **Atomic Manual Construction:** Every UI component (Button, Modal, Input, etc.) must be built manually from scratch using atomic CSS principles.
+- **Styling Engine:** All styles must be written with type-safe **Panda CSS** or structured **Tailwind CSS**.
+- **Reasoning:** Pre-built libraries introduce massive bloat, difficult-to-override styles, and dependency lock-in. Agent Enderun enforces pure, lightweight, and 100% customizable UI code.
+
+## 2. Design System: Panda CSS & Tailwind Integration
 - **Token Usage:** Colors, spacing, and font sizes must be managed via the `token()` function or standard CSS variables.
 - **Responsive Syntax:** Object-based responsive syntax is mandatory:
   ```typescript

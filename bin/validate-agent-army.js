@@ -14,7 +14,6 @@ const FRAMEWORK_CANDIDATES = [
     ".claude",
     ".github",
     ".grok",
-    ".windsurf",
     ".antigravity",
     ".agent",
     ".gemini/antigravity-cli",

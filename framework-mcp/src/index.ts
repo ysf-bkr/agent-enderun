@@ -57,13 +57,25 @@ function validateArgs(toolName: string, args: Record<string, unknown>): string |
     return null;
 }
 
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+server.setRequestHandler(ListToolsRequestSchema, async (request) => {
+    // 2026 Stateless Spec: Log client info from metadata if available
+    const meta = (request as any)._meta;
+    if (meta) {
+        process.stderr.write(`[MCP] Stateless ListTools from ${meta.client?.name || "unknown"} v${meta.client?.version || "?.?"}\n`);
+    }
     return { tools: TOOLS };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const req = request as { params: { name: string, arguments?: Record<string, unknown> } };
     const { name, arguments: args } = req.params;
+    const meta = (request as any)._meta;
+    
+    // 2026 Stateless Spec: Prioritize metadata-driven context
+    if (meta) {
+        process.stderr.write(`[MCP] Stateless CallTool: ${name} (Client: ${meta.client?.name || "unknown"})\n`);
+    }
+
     const projectRoot = process.env.ENDERUN_PROJECT_ROOT || process.cwd();
 
     try {

@@ -38,6 +38,6 @@ export const database: AgentDefinition = {
             "DETERMINISTIC MIGRATIONS: Every migration must be reversible and produce identical results across environments.",
             "PERFORMANCE FIRST: Design indexes proactively — never retroactively after a performance incident.",
         ],
-        knowledgeFiles: ["kysely-standards.md", "typeorm-standards.md", "quality-standards.md"],
+        knowledgeFiles: ["kysely-standards.md", "typeorm-standards.md", "quality-standards.md", "performance-standards.md"],
     },
 };

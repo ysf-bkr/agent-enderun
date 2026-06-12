@@ -30,7 +30,6 @@ export const manager: AgentDefinition = {
         "get_framework_status",
         "get_system_health",
         "check_active_ports",
-        "start_dashboard",
     ],
     instructions: {
         identity: "AL Management Assistant and Supreme Discipline Enforcer",
@@ -54,6 +53,6 @@ export const manager: AgentDefinition = {
             "MEMORY INTEGRITY: Synchronize 'PROJECT_MEMORY.md' after every single turn. Memory drift is treason.",
             "LOCKING PROTOCOL: Always acquire a lock via 'acquire_lock' on 'memory' resource before writing to PROJECT_MEMORY.md. Release immediately after write.",
         ],
-        knowledgeFiles: ["governance-standards.md"],
+        knowledgeFiles: ["governance-standards.md", "llm-governance.md", "crud-governance.md"],
     },
 };

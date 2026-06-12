@@ -82,7 +82,6 @@ const CLAUDE_TOOL_MAP: Record<string, string> = {
     get_framework_status:  "Bash",
     get_system_health:     "Bash",
     check_active_ports:    "Bash",
-    start_dashboard:       "Bash",
     update_contract_hash:  "Write",
     acquire_lock:          "Write",
     release_lock:          "Write",
@@ -121,7 +120,6 @@ const GEMINI_TOOL_MAP: Record<string, string> = {
     get_framework_status:  "run_shell_command",
     get_system_health:     "run_shell_command",
     check_active_ports:    "run_shell_command",
-    start_dashboard:       "run_shell_command",
     update_contract_hash:  "write_file",
     acquire_lock:          "write_file",
     release_lock:          "write_file",
@@ -174,6 +172,7 @@ function buildSystemPrompt(
     ag: AgentDefinition,
     baseKnowledgeDir: string = path.join(getPackageRoot(), "templates/standards"),
     stripMetaComments = false,
+    paths: Record<string, string> = { backend: "apps/backend", frontend: "apps/web", mobile: "apps/mobile", docs: "docs" }
 ): string {
     const metaHeader = stripMetaComments ? [] : [
         `<!-- name: ${ag.name} -->`,
@@ -195,6 +194,13 @@ function buildSystemPrompt(
         `**Primary Role:** ${ag.role}`,
         `**Authority Tier:** ${ag.tier} (Capability: ${ag.capability}/10)`,
         "",
+        "## Project Structure",
+        `This project uses the following directory structure:`,
+        `- **Backend:** \`${paths.backend}\``,
+        `- **Frontend:** \`${paths.frontend}\``,
+        `- **Mobile:** \`${paths.mobile}\``,
+        `- **Documentation:** \`${paths.docs}\``,
+        "",
         "## Chain of Thought Protocol",
         "> Follow these steps in strict order for every task:",
         "",
@@ -213,6 +219,7 @@ function buildSystemPrompt(
         "- Never perform irreversible operations (schema drops, bulk deletes) without @manager approval.",
         "- Prefer surgical edits (`replace_text`, `patch_file`) over full file rewrites.",
         "- Escalate ambiguity to @manager instead of guessing.",
+        `- Ensure all development happens exclusively inside \`${paths.backend}\`, \`${paths.frontend}\`, or \`${paths.mobile}\`.`,
     ];
 
     if (ag.instructions.knowledgeFiles?.length) {
@@ -237,7 +244,7 @@ function buildSystemPrompt(
 //  Ref: https://docs.anthropic.com/en/docs/claude-code/sub-agents
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function toClaudeCodeMd(ag: AgentDefinition, baseKnowledgeDir?: string): string {
+export function toClaudeCodeMd(ag: AgentDefinition, baseKnowledgeDir?: string, paths?: Record<string, string>): string {
     const tools = [...new Set(ag.tools.map((t: string) => CLAUDE_TOOL_MAP[t] ?? t))];
     const model = resolveModel(ag.capability, "claude-code");
     const color = ag.tier === "supreme" ? "purple"
@@ -256,7 +263,7 @@ export function toClaudeCodeMd(ag: AgentDefinition, baseKnowledgeDir?: string): 
         "---",
     ].join("\n");
 
-    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir)}`;
+    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir, false, paths)}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -265,7 +272,7 @@ export function toClaudeCodeMd(ag: AgentDefinition, baseKnowledgeDir?: string): 
 //  Ref: https://ai.google.dev/gemini-api/docs/agents
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): string {
+export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string, paths?: Record<string, string>): string {
     const tools = [...new Set(ag.tools.map((t: string) => GEMINI_TOOL_MAP[t] ?? t))];
     const model = resolveModel(ag.capability, "gemini-cli");
 
@@ -280,7 +287,7 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
         "---",
     ].join("\n");
 
-    const body = buildSystemPrompt(ag, baseKnowledgeDir, true);
+    const body = buildSystemPrompt(ag, baseKnowledgeDir, true, paths);
 
     const metaFooter = [
         "",
@@ -297,7 +304,7 @@ export function toGeminiCliMd(ag: AgentDefinition, baseKnowledgeDir?: string): s
 //  Spec: Antigravity customAgentSpec JSON schema
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function toAntigravityJson(ag: AgentDefinition, baseKnowledgeDir?: string): string {
+export function toAntigravityJson(ag: AgentDefinition, baseKnowledgeDir?: string, paths?: Record<string, string>): string {
     const knowledgeBase = baseKnowledgeDir ?? path.join(getPackageRoot(), "templates/standards");
 
     // Embed actual file contents so the agent can read governance docs
@@ -322,6 +329,16 @@ export function toAntigravityJson(ag: AgentDefinition, baseKnowledgeDir?: string
                         content: `${ag.instructions.identity}\n\n**Mission:** ${ag.instructions.mission}`,
                     },
                     {
+                        title: "Project Structure",
+                        content: [
+                            "This project uses the following directory structure:",
+                            `- Backend: ${paths?.backend || "apps/backend"}`,
+                            `- Frontend: ${paths?.frontend || "apps/web"}`,
+                            `- Mobile: ${paths?.mobile || "apps/mobile"}`,
+                            `- Documentation: ${paths?.docs || "docs"}`,
+                        ].join("\n"),
+                    },
+                    {
                         title: "Chain of Thought Protocol",
                         content: ag.instructions.chainOfThought,
                     },
@@ -337,6 +354,7 @@ export function toAntigravityJson(ag: AgentDefinition, baseKnowledgeDir?: string
                             "- Read PROJECT_MEMORY.md at session start.",
                             "- Prefer surgical edits over full file rewrites.",
                             "- Escalate high-risk operations to @manager.",
+                            `- Ensure development happens inside ${paths?.backend || "apps/backend"}, ${paths?.frontend || "apps/web"}, or ${paths?.mobile || "apps/mobile"}.`,
                         ].join("\n"),
                     },
                     ...knowledgeSections,
@@ -356,7 +374,7 @@ export const buildAgentJson = toAntigravityJson;
 //  Valid fields: agent-type, display-name, when-to-use, model, allowed-tools
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): string {
+export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string, paths?: Record<string, string>): string {
     const model = resolveModel(ag.capability, "codex-cli");
     const tools = [...new Set(ag.tools.map((t: string) => {
         if (["read_file","view_file","list_dir","grep_search","get_memory_insights","read_project_memory","get_project_map","get_project_gaps","get_framework_status"].includes(t)) return "read";
@@ -375,7 +393,7 @@ export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): strin
         "---",
     ].join("\n");
 
-    const body = buildSystemPrompt(ag, baseKnowledgeDir, true);
+    const body = buildSystemPrompt(ag, baseKnowledgeDir, true, paths);
 
     const metaFooter = [
         "",
@@ -393,7 +411,7 @@ export function toCodexMd(ag: AgentDefinition, baseKnowledgeDir?: string): strin
 //  Ref: https://docs.cursor.com/context/rules
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function toCursorMdc(ag: AgentDefinition, baseKnowledgeDir?: string): string {
+export function toCursorMdc(ag: AgentDefinition, baseKnowledgeDir?: string, paths?: Record<string, string>): string {
     const glob = CURSOR_AGENT_GLOBS[ag.name] || "**/*";
     // Only officially supported Cursor MDC frontmatter fields
     const frontmatter = [
@@ -404,7 +422,7 @@ export function toCursorMdc(ag: AgentDefinition, baseKnowledgeDir?: string): str
         "---",
     ].join("\n");
 
-    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir)}`;
+    return `${frontmatter}\n\n${buildSystemPrompt(ag, baseKnowledgeDir, false, paths)}`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -418,19 +436,19 @@ export interface ExportedFile {
   content: string;
 }
 
-export function exportAllAgents(target: ExportTarget): ExportedFile[] {
+export function exportAllAgents(target: ExportTarget, paths?: Record<string, string>): ExportedFile[] {
     return ALL_AGENTS.map(ag => {
         switch (target) {
             case "claude-code":
-                return { path: `.claude/agents/${ag.name}.md`,         content: toClaudeCodeMd(ag) };
+                return { path: `.claude/agents/${ag.name}.md`,         content: toClaudeCodeMd(ag, undefined, paths) };
             case "gemini-cli":
-                return { path: `.gemini/agents/${ag.name}.md`,         content: toGeminiCliMd(ag) };
+                return { path: `.gemini/agents/${ag.name}.md`,         content: toGeminiCliMd(ag, undefined, paths) };
             case "antigravity":
-                return { path: `.agents/${ag.name}/agent.json`,        content: toAntigravityJson(ag) };
+                return { path: `.agents/${ag.name}/agent.json`,        content: toAntigravityJson(ag, undefined, paths) };
             case "codex-cli":
-                return { path: `.agents/${ag.name}.md`,                content: toCodexMd(ag) };
+                return { path: `.agents/${ag.name}.md`,                content: toCodexMd(ag, undefined, paths) };
             case "cursor":
-                return { path: `.cursor/rules/${ag.name}.mdc`,         content: toCursorMdc(ag) };
+                return { path: `.cursor/rules/${ag.name}.mdc`,         content: toCursorMdc(ag, undefined, paths) };
         }
     });
 }

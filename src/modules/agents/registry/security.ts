@@ -37,6 +37,6 @@ export const security: AgentDefinition = {
             "RAW SQL FORBIDDEN: Reject any query that bypasses Kysely — zero exceptions.",
             "AUDIT LOGS: Monitor and log all high-risk administrative actions via 'log_agent_action'.",
         ],
-        knowledgeFiles: ["security-standards.md"],
+        knowledgeFiles: ["security-standards.md", "security-audit-standards.md", "auth-standards.md", "logging-and-secrets.md"],
     },
 };

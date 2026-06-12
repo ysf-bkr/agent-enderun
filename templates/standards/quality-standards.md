@@ -7,7 +7,8 @@ This document defines the technical discipline rules that all code produced by t
 - **No Explicit Any:** The use of `any` is strictly forbidden. `unknown` should be used for uncertain types and verified with type guards.
 - **Exhaustive Checks:** All cases must be checked (exhaustive) in `switch-case` structures, or safety must be provided with the `never` type.
 
-## 2. ESLint and Static Analysis
+## 2. ESLint and Static Analysis (AST Enforced)
+- **Real-Time AST Audits:** Every file mutation by an agent is scanned via **Abstract Syntax Tree (AST)** analysis. Prohibited patterns (`any`, `console.log`) are blocked at the protocol level.
 - **Zero Warnings:** No ESLint warnings or errors can exist in the codebase.
 - **Naming Conventions:**
   - Variables and functions: `camelCase`

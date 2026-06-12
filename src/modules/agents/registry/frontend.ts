@@ -43,6 +43,6 @@ export const frontend: AgentDefinition = {
             "OVERFLOW GUARD: Prevent horizontal scroll via proper box-sizing, max-width bounds, and container margins.",
             "ATOMIC UI: Create shared components exclusively in 'apps/web/src/components/ui/'.",
         ],
-        knowledgeFiles: ["frontend-standards.md", "i18n-standards.md"],
+        knowledgeFiles: ["frontend-standards.md", "i18n-standards.md", "react-query-standards.md", "react-router-standards.md", "tailwind-standards.md", "performance-standards.md"],
     },
 };

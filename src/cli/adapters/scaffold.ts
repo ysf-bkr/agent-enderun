@@ -20,7 +20,8 @@ export function scaffoldAgents(
     dryRun: boolean, 
     agentsToScaffold?: string[],
     explicitDestDir?: string,
-    explicitExt?: string
+    explicitExt?: string,
+    paths?: Record<string, string>
 ): void {
     const adapter = ADAPTERS[adapterId];
     if (!adapter) return;
@@ -46,27 +47,27 @@ export function scaffoldAgents(
 
             switch (adapterId) {
                 case "gemini":
-                    content = toGeminiCliMd(agent, baseKnowledgeDir);
+                    content = toGeminiCliMd(agent, baseKnowledgeDir, paths);
                     break;
                 case "grok":
                     // Grok uses same Gemini-compatible YAML format
-                    content = toGeminiCliMd(agent, baseKnowledgeDir);
+                    content = toGeminiCliMd(agent, baseKnowledgeDir, paths);
                     break;
                 case "claude":
-                    content = toClaudeCodeMd(agent, baseKnowledgeDir);
+                    content = toClaudeCodeMd(agent, baseKnowledgeDir, paths);
                     break;
                 case "cursor":
-                    content = toCursorMdc(agent, baseKnowledgeDir);
+                    content = toCursorMdc(agent, baseKnowledgeDir, paths);
                     break;
                 case "codex":
-                    content = toCodexMd(agent, baseKnowledgeDir);
+                    content = toCodexMd(agent, baseKnowledgeDir, paths);
                     break;
                 case "antigravity-cli": {
                     // Antigravity uses nested folders: agents/{name}/agent.json and agents/{name}/agent.md
                     const agentDir = path.join(destAgentsDir, agent.name);
                     if (!dryRun) fs.mkdirSync(agentDir, { recursive: true });
                     
-                    content = toAntigravityJson(agent, baseKnowledgeDir);
+                    content = toAntigravityJson(agent, baseKnowledgeDir, paths);
                     fileName = path.join(agent.name, "agent.json");
                     
                     secondaryContent = `# 🎖️ Agent Enderun — @${agent.name}\n\n${agent.instructions.identity}\n\n${agent.instructions.mission}`;
@@ -75,7 +76,7 @@ export function scaffoldAgents(
                 }
                 default:
                     // Fallback to Gemini format
-                    content = toGeminiCliMd(agent, baseKnowledgeDir);
+                    content = toGeminiCliMd(agent, baseKnowledgeDir, paths);
                     break;
             }
 

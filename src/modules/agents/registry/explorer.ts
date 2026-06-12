@@ -36,6 +36,6 @@ export const explorer: AgentDefinition = {
             "DEPENDENCY MAP: Map all file dependencies and surface them to @manager in a structured report.",
             "RECON FIRST: No specialist should act on an unexplored codebase — flag absence of ADP as a phase blocker.",
         ],
-        knowledgeFiles: ["architecture-standards.md"],
+        knowledgeFiles: ["architecture-standards.md", "observability-standards.md"],
     },
 };

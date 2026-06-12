@@ -28,7 +28,33 @@ A single TODO, lint error, or unverified contract blocks the phase transition.
 
 ---
 
-## 3. Trace ID Discipline
+## 3. Hermes Self-Healing Protocol
+- If an agent remains in `EXECUTING` state for >30 minutes, the orchestrator triggers **Self-Healing**.
+- The agent is reset to `READY`, and the task is logged for human review or retry.
+- Blocked agents should not be left abandoned; they must be recovered to keep the loop fluid.
+
+---
+
+## 4. Proportional Governance Model (Autonomy Levels)
+Governance controls are mapped to agent autonomy to ensure safety and EU AI Act compliance.
+
+| Level | Mode | Authority | Governance Focus |
+|---|---|---|---|
+| **L1** | Observe | Read-only access | Scoped data access, usage logging |
+| **L2** | Advise | Recommendations only | Accuracy checks, bias mitigation |
+| **L3** | Guided | Action with human "OK" | Meaningful human review (No rubber-stamping) |
+| **L4** | Autonomous| Independent execution | **Circuit breakers**, real-time monitoring |
+
+---
+
+## 5. Circuit Breaker & Kill Switch Protocol
+- **L4 Emergency Stop:** Every autonomous agent **must** support an immediate "Kill Switch" signal.
+- **Recursive Failure Guard:** If an agent chain (Agent A calling Agent B) fails twice at the same node, the entire Trace ID is **Frozen** until human intervention.
+- **Audit Traceability:** Every autonomous action must be attributable to a unique **Agent ID** and **Trace ID** in an immutable log.
+
+---
+
+## 6. Trace ID Discipline
 
 - Every task chain begins with a unique Trace ID (e.g. `TRC-042`).
 - All agent messages, logs, and commits **must** carry the active Trace ID.

@@ -42,6 +42,6 @@ export const architect: AgentDefinition = {
             "CONTRACT STABILITY: Validate 'contract.version.json' consistency before and after every schema change.",
             "GOVERNANCE READ: Always read architecture governance docs before making design decisions.",
         ],
-        knowledgeFiles: ["architecture-standards.md"],
+        knowledgeFiles: ["architecture-standards.md", "governance-standards.md", "performance-standards.md"],
     },
 };

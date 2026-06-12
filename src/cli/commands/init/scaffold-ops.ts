@@ -48,9 +48,6 @@ export function scaffoldOps(frameworkDir: string, dryRun: boolean) {
     };
     writeJsonFile(path.join(frameworkDir, "cli-commands.json"), cliCommands, dryRun);
 
-    // Scaffold BRAIN_DASHBOARD.md
-    writeTextFile(path.join(frameworkDir, "BRAIN_DASHBOARD.md"), "# 🧠 Brain Dashboard\n\nActive Trace: T-000\nActive Phase: PHASE_0 (Genesis)\n\n## Agent Statuses\n- @manager: READY\n- @architect: READY\n- @backend: READY\n- @frontend: READY\n- @quality: READY\n");
-
     // Scaffold router/routing_rules.md
     const routerDir = path.join(frameworkDir, "router");
     if (!fs.existsSync(routerDir)) fs.mkdirSync(routerDir, { recursive: true });

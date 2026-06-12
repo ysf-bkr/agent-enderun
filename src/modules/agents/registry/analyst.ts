@@ -39,6 +39,6 @@ export const analyst: AgentDefinition = {
             "VERSIONING INTEGRITY: Validate that all API versioning changes are correctly registered in 'contract.version.json'.",
             "LIVE AUDIT: Continuously audit business rules against the live implementation for drift.",
         ],
-        knowledgeFiles: ["architecture-standards.md", "crud-governance.md"],
+        knowledgeFiles: ["architecture-standards.md", "crud-governance.md", "governance-standards.md", "quality-standards.md"],
     },
 };

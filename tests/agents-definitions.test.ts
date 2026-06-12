@@ -61,6 +61,7 @@ describe("Agents Definitions", () => {
         expect(parsed.customAgentSpec.customAgent.systemPromptSections[0].title).toBe("Identity & Mission");
         expect(parsed.customAgentSpec.customAgent.systemPromptSections[0].content).toContain("Mock Identity");
         expect(parsed.customAgentSpec.customAgent.systemPromptSections[0].content).toContain("Mock mission statement.");
-        expect(parsed.customAgentSpec.customAgent.systemPromptSections[2].content).toContain("Do test steps.");
+        expect(parsed.customAgentSpec.customAgent.systemPromptSections[3].title).toBe("Discipline Rules");
+        expect(parsed.customAgentSpec.customAgent.systemPromptSections[3].content).toContain("Do test steps.");
     });
 });

@@ -65,12 +65,21 @@ export async function orchestrateCommand(options?: { maxIterations?: number }) {
             const agentStatuses = readStatus();
             let updatedStatus = false;
             for (const [agentName, info] of Object.entries(agentStatuses)) {
-                const { state, lastUpdated } = info as { state: string; task: string; lastUpdated?: string };
+                const { state, lastUpdated, task } = info as { state: string; task: string; lastUpdated?: string };
                 if (state === "EXECUTING" && lastUpdated) {
                     const lastUpdatedTime = Date.parse(lastUpdated);
                     if (!isNaN(lastUpdatedTime) && Date.now() - lastUpdatedTime > 30 * 60 * 1000) {
-                        UI.error(`⚠️  Agent ${agentName} has TIMED OUT (in EXECUTING state for >30m). Transitioning to BLOCKED.`);
-                        agentStatuses[agentName] = { state: "BLOCKED", task: "Timeout occurred", lastUpdated: new Date().toISOString() };
+                        const displayAgent = agentName.startsWith("@") ? agentName : `@${agentName}`;
+                        UI.error(`⚠️  Agent ${displayAgent} has TIMED OUT (in EXECUTING state for >30m). Triggering Self-Healing...`);
+                        
+                        // SELF-HEALING: Log the failure and reset to READY
+                        agentStatuses[agentName] = { 
+                            state: "READY", 
+                            task: "Idle (Recovered from Timeout)", 
+                            lastUpdated: new Date().toISOString() 
+                        };
+                        
+                        UI.success(`✅ Hermes Self-Healing: ${displayAgent} reset to READY state. Task "${task}" aborted for recovery.`);
                         updatedStatus = true;
                     }
                 }

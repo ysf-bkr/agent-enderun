@@ -43,6 +43,6 @@ export const backend: AgentDefinition = {
             "HIGH-RISK OPS: Refuse User/Role management, bulk deletes, schema alterations, and billing changes autonomously. " +
       "Return a standard refusal, send a managerApproval request to @manager, and shift to WAITING status.",
         ],
-        knowledgeFiles: ["crud-governance.md", "kysely-standards.md", "typeorm-standards.md"],
+        knowledgeFiles: ["crud-governance.md", "kysely-standards.md", "typeorm-standards.md", "auth-standards.md", "swagger-standards.md", "pino-standards.md"],
     },
 };

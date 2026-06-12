@@ -39,6 +39,6 @@ export const mobile: AgentDefinition = {
             "TOUCH TARGETS: All touchable components must have a minimum interactive area of 44dp × 44dp.",
             "OFFLINE FIRST: Implement caching via React Query and local storage for all critical data paths.",
         ],
-        knowledgeFiles: ["mobile-standards.md"],
+        knowledgeFiles: ["mobile-standards.md", "performance-standards.md", "react-query-standards.md"],
     },
 };

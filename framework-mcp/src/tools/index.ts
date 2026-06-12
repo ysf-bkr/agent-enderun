@@ -14,7 +14,6 @@ import { handleAuditDependencies } from "./framework/audit_deps.js";
 import { handleRunTests } from "./framework/run_tests.js";
 import { handleGetSystemHealth } from "./observability/get_health.js";
 import { handleCheckPorts } from "./observability/check_ports.js";
-import { handleStartDashboard } from "./dashboard/start_dashboard.js";
 import { handleOrchestrateLoop } from "./framework/orchestrate.js";
 import { handleUpdateContractHash } from "./framework/update_contract_hash.js";
 import { handleReadProjectMemory } from "./memory/read_memory.js";
@@ -51,7 +50,6 @@ export const toolHandlers: Record<string, ToolHandler> = {
     run_tests: bind(handleRunTests),
     get_system_health: bind(handleGetSystemHealth),
     check_active_ports: bind(handleCheckPorts),
-    start_dashboard: bind(handleStartDashboard),
     orchestrate_loop: bind(handleOrchestrateLoop),
     send_agent_message: bind(handleSendAgentMessage),
     log_agent_action: bind(handleLogAgentAction),

@@ -11,7 +11,7 @@ import {
     type AdapterId,
 } from "../adapters/index.js";
 import { ensureDir } from "../utils/fs.js";
-import { initializeMemory } from "../utils/memory.js";
+import { initializeMemory, getConfiguredPaths } from "../utils/memory.js";
 import { getPackageVersion } from "../utils/pkg.js";
 import { UI } from "../utils/ui.js";
 
@@ -122,18 +122,20 @@ export async function initCommand(adapterName: string, options: { unified?: bool
 
     scaffoldStandards(path.join(projectRoot, coreDir), dryRun);
 
+    const pathsMap = getConfiguredPaths();
+
     if (isUnified) {
         // Scaffold ALL agents for ALL adapters under unified hub
         for (const id of ADAPTER_IDS) {
             const dest = resolveAgentsDir(id, true, aiToolDir);
-            scaffoldAgents(projectRoot, id, dryRun, selectedAgents, dest.agentsDir, dest.agentsExt);
+            scaffoldAgents(projectRoot, id, dryRun, selectedAgents, dest.agentsDir, dest.agentsExt, pathsMap);
             if (!dryRun) mirrorUnifiedAgentsToNative(projectRoot, id);
         }
         UI.success(`✅ Scaffolding complete for all adapters under ${aiToolDir}/ with native mirrors.`);
     } else {
         // Standard single-adapter scaffold
         const dest = resolveAgentsDir(adapterId, false);
-        scaffoldAgents(projectRoot, adapterId, dryRun, selectedAgents, dest.agentsDir, dest.agentsExt);
+        scaffoldAgents(projectRoot, adapterId, dryRun, selectedAgents, dest.agentsDir, dest.agentsExt, pathsMap);
         UI.success(`✅ Generated agent definitions under ${dest.agentsDir}/`);
     }
 

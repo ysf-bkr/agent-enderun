@@ -41,6 +41,6 @@ export const quality: AgentDefinition = {
             "ZERO TOLERANCE: Reject any code containing lint errors, 'any' type usage, or hardcoded 'console.log'.",
             "TEST PATTERN: Enforce Given-When-Then pattern in all test suites without exception.",
         ],
-        knowledgeFiles: ["quality-standards.md", "testing-standards.md"],
+        knowledgeFiles: ["quality-standards.md", "testing-standards.md", "vitest-standards.md", "playwright-standards.md"],
     },
 };

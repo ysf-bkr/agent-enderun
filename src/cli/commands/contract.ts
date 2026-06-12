@@ -7,13 +7,14 @@ import { ValidationError } from "../../shared/errors.js";
 /**
  * Verify type safety between backend and frontend contracts.
  */
-export async function verifyApiContractCommand() {
+export async function verifyApiContractCommand(options: { silent?: boolean } = {}): Promise<boolean> {
     const projectRoot = process.cwd();
     const pathsMap = getConfiguredPaths();
     const sharedDir = path.join(projectRoot, pathsMap.backend, "src/types");
     const contractPath = path.join(projectRoot, pathsMap.backend, "contract.version.json");
 
     if (!fs.existsSync(sharedDir) || !fs.existsSync(contractPath)) {
+        if (options.silent) return false;
         throw new ValidationError(
             "API types or contract version file missing.",
             null,
@@ -25,8 +26,10 @@ export async function verifyApiContractCommand() {
     const contract = JSON.parse(fs.readFileSync(contractPath, "utf8"));
 
     if (contract.contract_hash === currentHash) {
-        console.warn("✅ Contract is valid and synchronized.");
+        if (!options.silent) console.warn("✅ Contract is valid and synchronized.");
+        return true;
     } else {
+        if (options.silent) return false;
         throw new ValidationError(
             "Contract drift detected!",
             { stored: contract.contract_hash, actual: currentHash },

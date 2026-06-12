@@ -58,16 +58,19 @@ describe("Hermes Message Protocol & Orchestration", () => {
         expect(result).toBeDefined();
     });
 
-    it("should detect executing agent timeouts and transition them to BLOCKED", async () => {
+    it("should detect executing agent timeouts and transition them to READY (Self-Healing)", async () => {
         const pastTime = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-        memoryUtils.updateDocumentStore("status", {
-            "@frontend": { state: "EXECUTING", task: "Building dashboard", lastUpdated: pastTime }
-        });
+        const initialStatus = {
+            "@manager": { state: "READY", task: "Idle" },
+            "@frontend": { state: "EXECUTING", task: "Compiling assets", lastUpdated: pastTime }
+        };
+        memoryUtils.updateDocumentStore("status", initialStatus);
 
-        // Run a single orchestration iteration (avoids infinite loop in tests)
+        // Run a single orchestration iteration
         await orchestrateCommand({ maxIterations: 1 });
 
         const statuses = memoryUtils.readStatus();
-        expect(statuses["@frontend"].state).toBe("BLOCKED");
+        expect(statuses["@frontend"]).toBeDefined();
+        expect(statuses["@frontend"].state).toBe("READY");
     });
 });

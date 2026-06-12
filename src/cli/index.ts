@@ -32,8 +32,8 @@ async function main() {
         const to = command;
         const content = args.slice(1).join(" ");
         if (!content) {
-            console.error(`❌ Error: Missing task content for ${to}.`);
-            console.warn(`Usage: agent-enderun ${to} "Your task description"`);
+            process.stderr.write(`❌ Error: Missing task content for ${to}.\n`);
+            process.stderr.write(`Usage: agent-enderun ${to} "Your task description"\n`);
             process.exit(64);
         }
 
@@ -54,8 +54,8 @@ async function main() {
             traceId
         });
 
-        console.warn(`✅ Task delegated to ${to} (Trace: ${traceId})`);
-        console.warn("👉 Run \"agent-enderun orchestrate\" to process.");
+        process.stdout.write(`✅ Task delegated to ${to} (Trace: ${traceId})\n`);
+        process.stdout.write("👉 Run \"agent-enderun orchestrate\" to process.\n");
         return;
     }
 
@@ -93,16 +93,10 @@ async function main() {
             const section = args[1];
             const content = args[2];
             if (!section || !content) {
-                console.error("❌ Error: section and content are required.");
+                process.stderr.write("❌ Error: section and content are required.\n");
                 process.exit(64);
             }
             await updateProjectMemoryCommand(section, content);
-            break;
-        }
-
-        case "dashboard": {
-            const { dashboardCommand } = await import("./commands/dashboard.js");
-            await dashboardCommand(args.slice(1));
             break;
         }
 
@@ -114,7 +108,7 @@ async function main() {
         case "approve": {
             const traceId = args[1];
             if (!traceId) {
-                console.error("❌ Error: traceId is required.");
+                process.stderr.write("❌ Error: traceId is required.\n");
                 process.exit(64);
             }
             await approveCommand(traceId);
@@ -228,7 +222,7 @@ async function main() {
         case "version":
         case "-v":
         case "--version":
-            console.warn(`v${getPackageVersion()}`);
+            process.stdout.write(`v${getPackageVersion()}\n`);
             break;
 
         case "help":
@@ -258,8 +252,8 @@ async function main() {
                     traceId
                 });
 
-                console.warn(`📡 Request sent to @manager: "${content}" (Trace: ${traceId})`);
-                console.warn("👉 Run 'agent-enderun orchestrate' to process.");
+                process.stdout.write(`📡 Request sent to @manager: "${content}" (Trace: ${traceId})\n`);
+                process.stdout.write("👉 Run 'agent-enderun orchestrate' to process.\n");
             } else {
                 showHelp();
             }
@@ -268,7 +262,7 @@ async function main() {
 }
 
 function showHelp() {
-    console.warn(`
+    process.stdout.write(`
 🎖️  Agent Enderun CLI (v${getPackageVersion()}) — The Supreme AI Orchestrator
 
 Usage:
@@ -307,7 +301,7 @@ Natural Language:
 Example:
   agent-enderun "Audit my project"
   agent-enderun @backend "Create the login page"
-    `);
+    \n`);
 }
 
 import { EnderunBaseError } from "../shared/errors.js";
@@ -315,12 +309,12 @@ import { logger } from "../shared/logger.js";
 
 main().catch((err) => {
     if (err instanceof EnderunBaseError) {
-        console.error(`\n❌ [${err.code}] Error: ${err.message}`);
+        process.stderr.write(`\n❌ [${err.code}] Error: ${err.message}\n`);
         if (err.solution) {
-            console.warn(`💡 Solution Tip: ${err.solution}\n`);
+            process.stderr.write(`💡 Solution Tip: ${err.solution}\n\n`);
         }
     } else {
-        console.error(`\n❌ Fatal Error: ${err.message || String(err)}`);
+        process.stderr.write(`\n❌ Fatal Error: ${err.message || String(err)}\n`);
     }
 
     logger.fatal("Fatal exception during CLI execution", err);

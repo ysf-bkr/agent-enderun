@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
+import { logger } from "./logger.js";
 
 export function ensureDir(dirPath: string, dryRun = false): void {
     if (!fs.existsSync(dirPath)) {
         if (dryRun) {
-            console.warn(`[DRY RUN] Would create directory: ${dirPath}`);
+            logger.info(`[DRY RUN] Would create directory: ${dirPath}`);
         } else {
             fs.mkdirSync(dirPath, { recursive: true });
         }
@@ -17,7 +18,7 @@ export function ensureDir(dirPath: string, dryRun = false): void {
  */
 export function writeTextFile(filePath: string, content: string, dryRun = false): void {
     if (dryRun) {
-        console.warn(`[DRY RUN] Would write file: ${filePath}`);
+        logger.info(`[DRY RUN] Would write file: ${filePath}`);
         return;
     }
     const dir = path.dirname(filePath);
@@ -37,7 +38,7 @@ export function writeTextFile(filePath: string, content: string, dryRun = false)
 
 export function appendFile(filePath: string, content: string, dryRun = false): void {
     if (dryRun) {
-        console.warn(`[DRY RUN] Would append to file: ${filePath}`);
+        logger.info(`[DRY RUN] Would append to file: ${filePath}`);
         return;
     }
     ensureDir(path.dirname(filePath));

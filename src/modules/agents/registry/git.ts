@@ -36,6 +36,6 @@ export const git: AgentDefinition = {
             "NO FORCE PUSH: Force-pushing to any shared branch is unconditionally forbidden.",
             "GIT FLOW: Strictly follow git-flow branching conventions — feature, hotfix, release naming enforced.",
         ],
-        knowledgeFiles: ["logging-and-secrets.md"],
+        knowledgeFiles: ["logging-and-secrets.md", "governance-standards.md"],
     },
 };

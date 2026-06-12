@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { execSync } from "child_process";
 
-import { getFrameworkDir, getMemoryPath, getConfiguredPaths, isFrameworkDevelopmentRepo } from "../utils/memory.js";
+import { getFrameworkDir, getMemoryPath, getConfiguredPaths, isFrameworkDevelopmentRepo, readState } from "../utils/memory.js";
 import { getPackageVersion, getValidatorPath } from "../utils/pkg.js";
 import { UI } from "../utils/ui.js";
 import { logger } from "../../shared/logger.js";
@@ -10,15 +10,40 @@ import { scanProjectCompliance } from "../utils/compliance.js";
 import { ALL_AGENTS } from "../../modules/agents/definitions.js";
 import { detectActiveAgentLayouts, findAgentInstruction } from "../adapters/paths.js";
 
+import { verifyApiContractCommand } from "./contract.js";
+
 export async function checkCommand() {
     UI.intent("Agent Enderun Health Check", `Checking system health and discipline rules (v${getPackageVersion()})...`);
     let issues = 0;
+
+    const state = readState();
+    if (!state) {
+        UI.error("Memory state not found. Run 'init' first.");
+        return;
+    }
 
     const frameworkDir = getFrameworkDir();
     const memoryPath = getMemoryPath();
     const pathsMap = getConfiguredPaths();
 
     UI.success(`Using framework dir: ${frameworkDir}`);
+
+    // --- Contract Gate (Phase 2+ Discipline) ---
+    if (["PHASE_2", "PHASE_3", "PHASE_4"].includes(state.phase)) {
+        console.warn("\n📝 Validating API Contracts (Phase 2+ Required)...");
+        try {
+            const contractOk = await verifyApiContractCommand({ silent: true });
+            if (!contractOk) {
+                UI.error("Contract verification FAILED! You cannot be in Phase 2+ with unverified contracts.");
+                issues++;
+            } else {
+                UI.success("API Contracts verified and sealed.");
+            }
+        } catch (err) {
+            UI.error("Error during contract verification.");
+            issues++;
+        }
+    }
 
     let knowledgeDir = "knowledge";
     if (frameworkDir === ".github") knowledgeDir = "instructions";
@@ -57,7 +82,6 @@ export async function checkCommand() {
         { name: ".env.example", path: ".env.example" },
         ...(isFrameworkDevelopment ? [{ name: "MCP Server", path: "framework-mcp/package.json" }] : []),
         { name: "Panda CSS Config", path: appPandaPath, optional: true },
-        { name: "Brain Dashboard", path: path.join(frameworkDir, "BRAIN_DASHBOARD.md") },
     ];
 
     for (const check of checks) {
@@ -133,52 +157,6 @@ export async function checkCommand() {
     } catch (err) {
         UI.warning("TypeScript type check FAILED or 'tsc' not found. This is a non-blocking warning for lightweight checks.");
         logger.debug("npx tsc --noEmit check failed", err);
-    }
-
-    interface MetricEntry {
-        timestamp: string;
-        agent: string;
-        action: string;
-        estimatedTokens: number;
-    }
-
-    const metricsPath = path.join(frameworkDir, "observability/metrics.json");
-    if (fs.existsSync(metricsPath)) {
-        try {
-            const raw = fs.readFileSync(metricsPath, "utf8");
-            const metrics: MetricEntry[] = JSON.parse(raw);
-            if (Array.isArray(metrics) && metrics.length > 0) {
-                console.warn("\n📊  Token Consumption Report:");
-                let totalTokens = 0;
-                const breakdown: Record<string, { count: number; tokens: number }> = {};
-
-                for (const entry of metrics) {
-                    const tokens = typeof entry.estimatedTokens === "number" ? entry.estimatedTokens : 0;
-                    totalTokens += tokens;
-
-                    const actionName = (entry.action || "unknown").split(":")[0].trim();
-                    if (!breakdown[actionName]) {
-                        breakdown[actionName] = { count: 0, tokens: 0 };
-                    }
-                    breakdown[actionName].count += 1;
-                    breakdown[actionName].tokens += tokens;
-                }
-
-                console.warn(`  - Total Operations: ${metrics.length}`);
-                console.warn(`  - Total Estimated Tokens: ${totalTokens}`);
-                console.warn("\n  Breakdown by Action:");
-                for (const [action, data] of Object.entries(breakdown)) {
-                    console.warn(`    - ${action}: ${data.count} ops (${data.tokens} tokens)`);
-                }
-            } else {
-                console.warn("\n📊  Token Consumption Report: No token usage logged yet.");
-            }
-        } catch (err) {
-            console.warn("\n📊  Token Consumption Report: Could not read or parse metrics file.");
-            logger.debug("Failed to read or parse metrics.json in checkCommand", err);
-        }
-    } else {
-        console.warn("\n📊  Token Consumption Report: No token usage logged yet.");
     }
 
     if (issues === 0) {

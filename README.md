@@ -1,6 +1,6 @@
 # 🏛️ Agent Enderun — The Supreme AI Governance & Autonomous Orchestration Framework
 
-> **Stable Release:** v1.11.3 (Enterprise Orchestration Ready) — Build Compile: Clean | Type-Safety: 100% Verified | AL Compliance: 13/13 Agents
+> **Stable Release:** v1.11.4 (Enterprise Orchestration Ready) — Build Compile: Clean | Type-Safety: 100% Verified | AL Compliance: 13/13 Agents
 
 > **Author:** Yusuf BEKAR
 > **Trace ID:** `01HGT8J5E2N0W0W0W0W0W0W0W5`
@@ -31,7 +31,7 @@ Yapay zeka kodlama yardımcıları (Claude Code, Gemini CLI, Grok Build vb.) gel
 
 ### 📦 Güncel Sürüm / Current Release
 
-**v1.11.3** — Kararlı Sürüm (Performans & Standartlar).
+**v1.11.4** — Kararlı Sürüm (Performans & Standartlar).
 *   **TR:** Yeni enterprise standartlar eklendi (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Orkestrasyon döngüsü bellek içi önbellekleme (in-memory cache) ile optimize edildi. Planlama komutu (`plan`) eklendi.
 *   **EN:** Added enterprise standards (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Optimized orchestration loop with in-memory caching. Added planning command (`plan`).
 
@@ -148,7 +148,7 @@ npx agent-enderun init antigravity-cli
 Sistem artık tüm zekasını ve persistence verilerini projenin kök dizininde kalabalık yapmadan **`.enderun/`** klasörü altında toplar:
 
 *   **`.enderun/memory/`**: `state.json`, `status.json` ve aktif görevler (`tasks/`).
-*   **`.enderun/knowledge/`**: Kurumsal standartlar ve ESLint kuralları.
+*   **`.enderun/knowledge/`**: Kurumsal standartlar (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright, Güvenlik vb. içeren 26 adet `.md` kurumsal standart dosyası) ve ESLint kuralları.
 *   **`.enderun/ENDERUN.md`**: Proje anayasası ve disiplin kuralları.
 
 ### 🕹️ CLI Komut Referansı ve Parametreleri
@@ -193,7 +193,7 @@ As AI coding assistants (Claude Code, Gemini CLI, Grok Build, etc.) become incre
 
 ### 📦 Current Release / Güncel Sürüm
 
-**v1.11.3** — Stable Release (Performance & Standards).
+**v1.11.4** — Stable Release (Performance & Standards).
 *   **EN:** Added enterprise standards (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Optimized orchestration loop with in-memory caching. Added planning command (`plan`).
 *   **TR:** Yeni enterprise standartlar eklendi (Kysely, TypeORM, Auth, Swagger, Pino, Vitest, CI/CD, React Query, Router, Playwright). Orkestrasyon döngüsü bellek içi önbellekleme (in-memory cache) ile optimize edildi. Planlama komutu (`plan`) eklendi.
 
@@ -323,4 +323,4 @@ Execute commands via `agent-enderun` (or `npx agent-enderun`):
 
 ---
 
-Developed with absolute discipline | Developer **Yusuf BEKAR** | Framework Version **v1.11.3** — Enterprise standards ready. Bloat removed. Corporate-ready.
+Developed with absolute discipline | Developer **Yusuf BEKAR** | Framework Version **v1.11.4** — Enterprise standards ready. Bloat removed. Corporate-ready.

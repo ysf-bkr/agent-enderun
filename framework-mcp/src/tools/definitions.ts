@@ -152,16 +152,6 @@ export const TOOLS: ToolDefinition[] = [
         }
     },
     {
-        name: "start_dashboard",
-        description: "Start the Enderun Web Dashboard (Command Center) to visualize real-time agent status, logs, and system metrics in the browser.",
-        inputSchema: {
-            type: "object",
-            properties: {
-                port: { type: "number", description: "Optional: Port to run the dashboard on (default: 5858)" }
-            }
-        }
-    },
-    {
         name: "get_framework_status",
         description: "Get the current project phase, active traces, and agent states.",
         inputSchema: { type: "object", properties: {} },
