@@ -106,17 +106,26 @@ Agent Enderun **Open Core** modelini takip eder. Çekirdek çerçeve açık kayn
 ## 🛠️ Quick Start / Hızlı Başlangıç
 
 ```bash
-# Gemini için (Strategic Decision Center)
+# ♊ Gemini için (Strategic Decision Center)
 npx agent-enderun init gemini --unified --yes
 
-# Claude için (Operational Surgery)
+# 🚀 Claude için (Operational Surgery)
 npx agent-enderun init claude --unified --yes
 
-# Grok için (Autonomous Reconnaissance)
+# 🤖 Grok için (Autonomous Reconnaissance)
 npx agent-enderun init grok
 
-# Yerel LLM için (Private AI - Ollama/vLLM)
+# 🏠 Yerel LLM için (Private AI - Ollama/vLLM)
 npx agent-enderun init local
+
+# ✍️ Cursor IDE için (IDE Implementation)
+npx agent-enderun init cursor
+
+# 💡 Codex / Copilot için (Assistant Developer)
+npx agent-enderun init codex
+
+# 🛸 Antigravity için (Internal Discipline)
+npx agent-enderun init antigravity-cli
 ```
 
 ---
