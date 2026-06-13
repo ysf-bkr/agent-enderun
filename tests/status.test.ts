@@ -12,6 +12,7 @@ describe("Status Command", () => {
     beforeEach(() => {
         tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enderun-status-test-"));
         memoryDir = path.join(tempDir, "memory");
+        process.env.ENDERUN_TEST_DIR = tempDir;
         
         // Mock the path resolution functions directly
         vi.spyOn(memoryUtils, "getFrameworkDir").mockReturnValue(tempDir);
@@ -21,6 +22,7 @@ describe("Status Command", () => {
     });
 
     afterEach(() => {
+        delete process.env.ENDERUN_TEST_DIR;
         fs.rmSync(tempDir, { recursive: true, force: true });
         vi.restoreAllMocks();
     });

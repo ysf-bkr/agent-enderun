@@ -1,6 +1,6 @@
 {
   "name": "agent-enderun",
-  "version": "1.11.4",
+  "version": "1.11.5",
   "description": "The Supreme AI Governance & Autonomous Orchestration Framework for Enterprise Development. Acts as a Corporate AI Management Assistant.",
   "author": "Yusuf BEKAR",
   "license": "MIT",
@@ -24,7 +24,8 @@
     "framework"
   ],
   "workspaces": [
-    "framework-mcp"
+    "framework-mcp",
+    "apps/*"
   ],
   "bin": {
     "agent-enderun": "bin/cli.js"
@@ -70,7 +71,7 @@
     "vitest": "^3.0.0"
   },
   "enderun": {
-    "version": "1.11.4",
+    "version": "1.11.5",
     "initializedAt": "2026-06-04T18:51:28.970Z",
     "frameworkDir": ".enderun"
   },

@@ -14,6 +14,7 @@ describe("Agent Integration Flow", () => {
         tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enderun-integration-test-"));
         memoryDir = path.join(tempDir, "memory");
         messagesDir = path.join(tempDir, "messages");
+        process.env.ENDERUN_TEST_DIR = tempDir;
         
         vi.spyOn(memoryUtils, "getFrameworkDir").mockReturnValue(tempDir);
         vi.spyOn(memoryUtils, "getDocumentStorePath").mockReturnValue(memoryDir);
@@ -29,6 +30,7 @@ describe("Agent Integration Flow", () => {
     });
 
     afterEach(() => {
+        delete process.env.ENDERUN_TEST_DIR;
         fs.rmSync(tempDir, { recursive: true, force: true });
         vi.restoreAllMocks();
     });

@@ -39,7 +39,7 @@ export async function checkCommand() {
             } else {
                 UI.success("API Contracts verified and sealed.");
             }
-        } catch (err) {
+        } catch {
             UI.error("Error during contract verification.");
             issues++;
         }

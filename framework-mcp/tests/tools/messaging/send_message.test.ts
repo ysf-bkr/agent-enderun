@@ -72,16 +72,16 @@ describe("Hermes Lock Protocol & Message sending", () => {
 
         expect(result.isError).toBe(true);
         expect(result.content[0].text).toContain("❌ Could not send message to @backend: Hermes lock is busy.");
-        // Retries takes 3 attempts with 500ms delay -> duration should be at least ~1000ms
-        expect(duration).toBeGreaterThanOrEqual(1000);
-    });
+        // Retries takes 20 attempts with 500ms delay -> duration should be at least ~9000ms
+        expect(duration).toBeGreaterThanOrEqual(9000);
+    }, 15000);
 
-    it("should bypass and acquire lock if existing lock is stale (older than 5s)", async () => {
+    it("should bypass and acquire lock if existing lock is stale (older than 10s)", async () => {
         fs.mkdirSync(MESSAGES_DIR, { recursive: true });
-        // Set lock file mtime to 10 seconds ago
+        // Set lock file mtime to 15 seconds ago
         fs.writeFileSync(BACKEND_LOCK_FILE, "Locked by @test at " + new Date().toISOString(), "utf8");
-        const tenSecondsAgo = new Date(Date.now() - 10000);
-        fs.utimesSync(BACKEND_LOCK_FILE, tenSecondsAgo, tenSecondsAgo);
+        const fifteenSecondsAgo = new Date(Date.now() - 15000);
+        fs.utimesSync(BACKEND_LOCK_FILE, fifteenSecondsAgo, fifteenSecondsAgo);
 
         const args: ToolArgs = {
             to: "@backend",

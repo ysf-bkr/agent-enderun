@@ -59,7 +59,7 @@ function validateArgs(toolName: string, args: Record<string, unknown>): string |
 
 server.setRequestHandler(ListToolsRequestSchema, async (request) => {
     // 2026 Stateless Spec: Log client info from metadata if available
-    const meta = (request as any)._meta;
+    const meta = (request as { _meta?: { client?: { name?: string; version?: string } } })._meta;
     if (meta) {
         process.stderr.write(`[MCP] Stateless ListTools from ${meta.client?.name || "unknown"} v${meta.client?.version || "?.?"}\n`);
     }
@@ -69,7 +69,7 @@ server.setRequestHandler(ListToolsRequestSchema, async (request) => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const req = request as { params: { name: string, arguments?: Record<string, unknown> } };
     const { name, arguments: args } = req.params;
-    const meta = (request as any)._meta;
+    const meta = (request as { _meta?: { client?: { name?: string; version?: string } } })._meta;
     
     // 2026 Stateless Spec: Prioritize metadata-driven context
     if (meta) {

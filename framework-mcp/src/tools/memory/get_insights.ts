@@ -19,14 +19,14 @@ export function handleGetMemoryInsights(projectRoot: string, _args: ToolArgs): T
         const content = fs.readFileSync(memoryPath, "utf8");
         const lines = content.split("\n");
         
-        const activePhase = lines.find(l => l.includes("Active Phase:"))?.split(":")[1]?.trim() || "Unknown";
-        const activeTrace = lines.find(l => l.includes("Active Trace:"))?.split(":")[1]?.trim() || "None";
+        const activePhase = lines.find(l => l.includes("**Phase:**"))?.split("**Phase:**")[1]?.trim() || "Unknown";
+        const activeTrace = lines.find(l => l.includes("**Trace ID:**"))?.split("**Trace ID:**")[1]?.trim() || "None";
         
         // Find the last 5 history items (heuristic)
-        const historyStartIndex = lines.findIndex(l => l.includes("## History"));
+        const historyStartIndex = lines.findIndex(l => l.toUpperCase().includes("HISTORY"));
         let recentHistory = "No history found.";
         if (historyStartIndex !== -1) {
-            recentHistory = lines.slice(historyStartIndex + 1, historyStartIndex + 15)
+            recentHistory = lines.slice(historyStartIndex + 1)
                 .filter(l => l.trim().startsWith("-"))
                 .slice(-5)
                 .join("\n");

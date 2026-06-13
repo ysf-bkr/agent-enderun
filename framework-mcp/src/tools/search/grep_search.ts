@@ -18,9 +18,8 @@ export function handleGrepSearch(projectRoot: string, args: GrepSearchArgs): Too
     }
 
     const results: string[] = [];
-    let regex: RegExp;
     try {
-        regex = new RegExp(pattern, "g");
+        new RegExp(pattern);
     } catch (e) {
         const err = `Invalid regex pattern: ${String(e)}`;
         Metrics.logError(projectRoot, "@mcp", "grep_search", err);
@@ -53,7 +52,7 @@ export function handleGrepSearch(projectRoot: string, args: GrepSearchArgs): Too
                     }
                 }
             }
-        } catch (e) {
+        } catch {
             // Ignore directories that cannot be read
         }
     };

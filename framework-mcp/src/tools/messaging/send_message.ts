@@ -5,7 +5,7 @@ import { SendAgentMessageArgs, ToolResult } from "../types.js";
 import { Metrics } from "../../utils/metrics.js";
 
 export async function handleSendAgentMessage(projectRoot: string, args: SendAgentMessageArgs): Promise<ToolResult> {
-    const { to, category, content, traceId } = args;
+    const { to, category, content, traceId, parentId, requiresApproval } = args;
     const from = args.from || "@mcp";
 
     if (!to || !category || !content || !traceId) {
@@ -20,15 +20,15 @@ export async function handleSendAgentMessage(projectRoot: string, args: SendAgen
     const messagePath = path.join(messagesDir, `${agentName}.json`);
     const lockPath = path.join(messagesDir, `${agentName}.lock`);
 
-    // Hermes Lock Protocol: Retry 3 times with 500ms delay
-    let retries = 3;
+    // Hermes Lock Protocol: Retry 20 times with 500ms delay
+    let retries = 20;
     let acquired = false;
     while (retries > 0) {
         try {
             if (fs.existsSync(lockPath)) {
                 try {
                     const stats = fs.statSync(lockPath);
-                    if (Date.now() - stats.mtimeMs > 5000) {
+                    if (Date.now() - stats.mtimeMs > 10000) {
                         fs.unlinkSync(lockPath);
                     }
                 } catch {
@@ -60,15 +60,21 @@ export async function handleSendAgentMessage(projectRoot: string, args: SendAgen
 
     try {
         const defaultPriority = (category === "ALERT" || category === "ACTION") ? "HIGH" : "NORMAL";
+        const finalRequiresApproval = requiresApproval !== undefined
+            ? requiresApproval
+            : category === "ALERT";
+
         const message = {
             timestamp: new Date().toISOString(),
             from,
             to,
             category,
             traceId,
+            parentId,
             content,
             priority: args.priority || defaultPriority,
-            status: "PENDING"
+            status: "PENDING",
+            requiresApproval: finalRequiresApproval
         };
 
         fs.appendFileSync(messagePath, JSON.stringify(message) + "\n");

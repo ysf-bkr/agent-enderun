@@ -37,26 +37,26 @@ export function verifyCorporateCompliance(content: string, filePath: string): vo
             }
         }
 
-    // 2. No Explicit Any Policy
-    if (ts.isTypeReferenceNode(node)) {
-        if (ts.isIdentifier(node.typeName) && node.typeName.text === "any") {
-            if (!filePath.includes("definitions.ts") && !filePath.includes("types.ts")) {
-                errors.push(`❌ Corporate Compliance Breach: 'any' type is forbidden at line ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}.`);
+        // 2. No Explicit Any Policy
+        if (ts.isTypeReferenceNode(node)) {
+            if (ts.isIdentifier(node.typeName) && node.typeName.text === "any") {
+                if (!filePath.includes("definitions.ts") && !filePath.includes("types.ts")) {
+                    errors.push(`❌ Corporate Compliance Breach: 'any' type is forbidden at line ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}.`);
+                }
             }
         }
-    }
-    
-    // 3. Zero UI Library Policy (No @chakra-ui, mui, @shadcn)
-    if (ts.isImportDeclaration(node)) {
-        const moduleSpecifier = node.moduleSpecifier;
-        if (ts.isStringLiteral(moduleSpecifier)) {
-            const forbiddenLibs = ["@chakra-ui", "mui", "@shadcn", "antd", "bootstrap"];
-            const lib = forbiddenLibs.find(l => moduleSpecifier.text.includes(l));
-            if (lib) {
-                errors.push(`❌ Corporate Compliance Breach: External UI library '${lib}' usage is FORBIDDEN at line ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}. Build atomic components manually instead.`);
+        
+        // 3. Zero UI Library Policy (No @chakra-ui, mui, @shadcn)
+        if (ts.isImportDeclaration(node)) {
+            const moduleSpecifier = node.moduleSpecifier;
+            if (ts.isStringLiteral(moduleSpecifier)) {
+                const forbiddenLibs = ["@chakra-ui", "mui", "@shadcn", "antd", "bootstrap"];
+                const lib = forbiddenLibs.find(l => moduleSpecifier.text.includes(l));
+                if (lib) {
+                    errors.push(`❌ Corporate Compliance Breach: External UI library '${lib}' usage is FORBIDDEN at line ${sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1}. Build atomic components manually instead.`);
+                }
             }
         }
-    }
         
         // Handle 'any' as a keyword type (e.g., parameter: any)
         if (node.kind === ts.SyntaxKind.AnyKeyword) {

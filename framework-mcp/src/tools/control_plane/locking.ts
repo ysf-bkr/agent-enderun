@@ -15,6 +15,7 @@ export async function handleAcquireLock(projectRoot: string, args: AcquireLockAr
     try {
         if (!fs.existsSync(lockDir)) fs.mkdirSync(lockDir, { recursive: true });
 
+        // Check for stale lock first
         if (fs.existsSync(lockPath)) {
             const stat = fs.statSync(lockPath);
             const now = new Date().getTime();
@@ -26,15 +27,28 @@ export async function handleAcquireLock(projectRoot: string, args: AcquireLockAr
                     content: [{ type: "text", text: `Resource '${resource}' is currently locked by another agent.` }]
                 };
             }
-            // Lock expired, safe to override
-            fs.unlinkSync(lockPath);
+            // Lock expired, safe to override by deleting first
+            try {
+                fs.unlinkSync(lockPath);
+            } catch (unlinkErr) {
+                // If another agent unlinked it first, ignore
+            }
         }
 
-        fs.writeFileSync(lockPath, JSON.stringify({ agent, timestamp: new Date().toISOString() }));
+        // Use 'wx' flag for atomic file creation
+        const lockData = JSON.stringify({ agent, timestamp: new Date().toISOString() });
+        fs.writeFileSync(lockPath, lockData, { flag: "wx" });
+        
         return {
             content: [{ type: "text", text: `✅ Lock acquired for resource '${resource}' by ${agent}.` }]
         };
-    } catch (e) {
+    } catch (e: any) {
+        if (e.code === "EEXIST") {
+            return {
+                isError: true,
+                content: [{ type: "text", text: `Resource '${resource}' was just acquired by another agent.` }]
+            };
+        }
         return {
             isError: true,
             content: [{ type: "text", text: `Failed to acquire lock: ${String(e)}` }]

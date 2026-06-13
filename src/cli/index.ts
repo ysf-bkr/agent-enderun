@@ -64,8 +64,10 @@ async function main() {
             const dryRun = args.includes("--dry-run");
             const isUnified = args.includes("--unified");
             const forceYes = args.includes("--yes") || args.includes("-y");
+            const profileArg = args.find(a => a.startsWith("--profile="));
+            const profile = profileArg ? profileArg.split("=")[1] : "full";
             const adapter = args.find(a => !a.startsWith("-") && a !== "init") || "gemini";
-            await initCommand(adapter, { dryRun, unified: isUnified, yes: forceYes });
+            await initCommand(adapter, { dryRun, unified: isUnified, yes: forceYes, profile });
             break;
         }
 
@@ -273,7 +275,7 @@ Usage:
 Commands:
   @<agent> <task>     Delegate a task to a specialist agent (e.g. @backend, @frontend)
   init [adapter]      Initialize Agent Enderun framework.
-                      Options: --interactive, --dry-run
+                      Options: --unified, --yes, --profile=[full|lite]
   check               Perform an enterprise-grade system health check
   status              Show active phase, trace ID, and agent statuses
   trace:new <desc>    Start a new task chain with a unique Trace ID

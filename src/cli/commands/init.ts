@@ -67,7 +67,7 @@ async function runInteractiveInit(): Promise<{ selectedDirs: string[], selectedA
     } finally { rl.close(); }
 }
 
-export async function initCommand(adapterName: string, options: { unified?: boolean, dryRun?: boolean, yes?: boolean }) {
+export async function initCommand(adapterName: string, options: { unified?: boolean, dryRun?: boolean, yes?: boolean, profile?: string }) {
     const adapterId = (adapterName || "gemini") as AdapterId;
     const adapter = resolveAdapter(adapterId);
 
@@ -78,6 +78,7 @@ export async function initCommand(adapterName: string, options: { unified?: bool
 
     const projectRoot = process.cwd();
     const isUnified = options.unified || false;
+    const executionProfile = (options.profile || "full").toLowerCase();
 
     // STRICT ISOLATION STRATEGY
     const coreDir = ".enderun"; // Pure Memory & Knowledge
@@ -86,7 +87,7 @@ export async function initCommand(adapterName: string, options: { unified?: bool
     const dryRun = options.dryRun || false;
     const forceYes = options.yes || false;
 
-    UI.intent("Enderun Initialization", `Bootstrapping ${FRAMEWORK_NAME} (v${getPackageVersion()}) with ${adapterId} adapter...`);
+    UI.intent("Enderun Initialization", `Bootstrapping ${FRAMEWORK_NAME} (v${getPackageVersion()}) with ${adapterId} adapter [Profile: ${executionProfile}]...`);
 
     let selectedDirs: string[];
     let selectedAgents: string[];
@@ -94,9 +95,16 @@ export async function initCommand(adapterName: string, options: { unified?: bool
 
     if (forceYes) {
         selectedDirs = ["knowledge", "prompts", "memory", "router", "registry", "observability", "rules"];
-        selectedAgents = ALL_AGENTS.map(a => a.name);
+        
+        if (executionProfile === "lite") {
+            const liteAgents = ["manager", "architect", "frontend"];
+            selectedAgents = ALL_AGENTS.filter(a => liteAgents.includes(a.name)).map(a => a.name);
+        } else {
+            selectedAgents = ALL_AGENTS.map(a => a.name);
+        }
+        
         selectedPalette = "Modern Blue";
-        UI.success("Non-interactive mode: Using default configurations.");
+        UI.success(`Non-interactive mode: Using default configurations for ${executionProfile} profile.`);
     } else {
         const result = await runInteractiveInit();
         selectedDirs = result.selectedDirs.filter(d => d !== "agents" && d !== "skills");
@@ -117,7 +125,8 @@ export async function initCommand(adapterName: string, options: { unified?: bool
     scaffoldConstitution(projectRoot, coreDir, adapterId, dryRun);
     scaffoldFrameworkConfigs(projectRoot, coreDir, adapter, dryRun, selectedPalette, {
         unified: isUnified,
-        adapters: isUnified ? [...ADAPTER_IDS] : [adapterId]
+        adapters: isUnified ? [...ADAPTER_IDS] : [adapterId],
+        profile: executionProfile
     });
 
     scaffoldStandards(path.join(projectRoot, coreDir), dryRun);

@@ -195,7 +195,7 @@ function buildSystemPrompt(
         `**Authority Tier:** ${ag.tier} (Capability: ${ag.capability}/10)`,
         "",
         "## Project Structure",
-        `This project uses the following directory structure:`,
+        "This project uses the following directory structure:",
         `- **Backend:** \`${paths.backend}\``,
         `- **Frontend:** \`${paths.frontend}\``,
         `- **Mobile:** \`${paths.mobile}\``,

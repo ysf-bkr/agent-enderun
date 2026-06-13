@@ -14,6 +14,7 @@ describe("Approve Command", () => {
     beforeEach(() => {
         tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enderun-approve-test-"));
         messagesDir = path.join(tempDir, "messages");
+        process.env.ENDERUN_TEST_DIR = tempDir;
         
         vi.spyOn(process, "cwd").mockReturnValue(tempDir);
         vi.spyOn(memoryUtils, "getFrameworkDir").mockReturnValue(tempDir);
@@ -24,12 +25,13 @@ describe("Approve Command", () => {
     });
 
     afterEach(() => {
+        delete process.env.ENDERUN_TEST_DIR;
         fs.rmSync(tempDir, { recursive: true, force: true });
         vi.restoreAllMocks();
     });
 
     it("should exit with error if messages directory does not exist", async () => {
-        const uiErrorSpy = vi.spyOn(UI, "error");
+        vi.spyOn(UI, "error");
 
         await expect(approveCommand("trace-123")).rejects.toThrow(ValidationError);
     });

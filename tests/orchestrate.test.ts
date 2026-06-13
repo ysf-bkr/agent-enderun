@@ -14,6 +14,7 @@ describe("Hermes Message Protocol & Orchestration", () => {
         tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enderun-orchestrate-test-"));
         memoryDir = path.join(tempDir, "memory");
         messagesDir = path.join(tempDir, "messages");
+        process.env.ENDERUN_TEST_DIR = tempDir;
         
         // Mock the path resolution functions
         vi.spyOn(memoryUtils, "getFrameworkDir").mockReturnValue(tempDir);
@@ -25,6 +26,7 @@ describe("Hermes Message Protocol & Orchestration", () => {
     });
 
     afterEach(() => {
+        delete process.env.ENDERUN_TEST_DIR;
         fs.rmSync(tempDir, { recursive: true, force: true });
         vi.restoreAllMocks();
     });

@@ -56,6 +56,13 @@ export async function orchestrateCommand(options?: { maxIterations?: number }) {
     while (isLooping) {
         try {
             // Initial load from disk to sync the cache
+            const frameworkConfigPath = path.join(frameworkDir, "config.json");
+            const frameworkConfig = fs.existsSync(frameworkConfigPath) 
+                ? JSON.parse(fs.readFileSync(frameworkConfigPath, "utf8"))
+                : {};
+            const executionProfile = frameworkConfig.profile || "full";
+            const liteAgents = ["manager", "architect", "frontend"];
+
             if (Object.keys(agentStatusCache).length === 0) {
                 const diskStatus = readStatus();
                 agentStatusCache = diskStatus || {};
@@ -65,6 +72,9 @@ export async function orchestrateCommand(options?: { maxIterations?: number }) {
             const agentStatuses = readStatus();
             let updatedStatus = false;
             for (const [agentName, info] of Object.entries(agentStatuses)) {
+                // Skip agents not in lite profile
+                if (executionProfile === "lite" && !liteAgents.includes(agentName)) continue;
+
                 const { state, lastUpdated, task } = info as { state: string; task: string; lastUpdated?: string };
                 if (state === "EXECUTING" && lastUpdated) {
                     const lastUpdatedTime = Date.parse(lastUpdated);
@@ -95,6 +105,13 @@ export async function orchestrateCommand(options?: { maxIterations?: number }) {
                 const fileMessagesMap: Record<string, HermesMessage[]> = {};
 
                 for (const file of messageFiles) {
+                    const agentName = file.replace(".json", "");
+                    // Skip agents not in lite profile
+                    if (executionProfile === "lite" && !liteAgents.includes(agentName)) {
+                        // Optional: Could move these messages to a "held" or "rejected" state
+                        continue;
+                    }
+
                     const filePath = path.join(messagesDir, file);
                     try {
                         const content = fs.readFileSync(filePath, "utf8").trim();
@@ -106,6 +123,12 @@ export async function orchestrateCommand(options?: { maxIterations?: number }) {
                             try {
                                 const parsed = JSON.parse(line);
                                 const msg = HermesMessageSchema.parse(parsed);
+
+                                // Profile Validation: Ensure recipient is active
+                                if (executionProfile === "lite" && !liteAgents.includes(msg.to.replace("@", ""))) {
+                                    UI.error(`⚠️  Message addressed to inactive agent @${msg.to} in LITE profile. Skipping.`);
+                                    return;
+                                }
 
                                 // Contract Validation for structured task messages
                                 // ACTION & DELEGATION must be valid TaskRequest payloads
@@ -301,6 +324,7 @@ export async function sendMessage(args: {
                     const stats = fs.statSync(lockPath);
                     // Increased stale lock timeout from 5s to 10s for heavy ops
                     if (Date.now() - stats.mtimeMs > 10000) {
+                        UI.warning(`♻️  Stale Hermes lock detected for @${agentName}. Clearing lock for @${args.from}.`);
                         fs.unlinkSync(lockPath);
                     }
                 } catch (err) {

@@ -45,7 +45,7 @@ export function scaffoldFrameworkConfigs(
     adapter: AdapterConfig, 
     dryRun: boolean, 
     selectedPalette: string,
-    options?: { unified?: boolean; adapters?: string[] }
+    options?: { unified?: boolean; adapters?: string[]; profile?: string }
 ) {
     if (dryRun) return;
     const frameworkDir = path.join(targetDir, fDir);
@@ -55,6 +55,7 @@ export function scaffoldFrameworkConfigs(
         name: FRAMEWORK_NAME,
         version: getPackageVersion(),
         unified: options?.unified || false,
+        profile: options?.profile || "full",
         adapters: options?.adapters || [adapter.id],
         theme: {
             palette: selectedPalette,
@@ -77,10 +78,25 @@ export function scaffoldFrameworkConfigs(
     }
 
     let statusContent = "# 🎖️ Status\n\n| Agent | State | Active Task | Last Updated | Notes | Extra | Backup |\n|---|---|---|---|---|---|---|\n";
-    for (const ag of ALL_AGENTS) {
+    
+    const liteAgents = ["manager", "architect", "frontend"];
+    const activeAgents = (options?.profile === "lite")
+        ? ALL_AGENTS.filter(ag => liteAgents.includes(ag.name))
+        : ALL_AGENTS;
+
+    const initialStatusJson: Record<string, { state: string; task: string; lastUpdated: string }> = {};
+    const now = new Date().toISOString();
+
+    for (const ag of activeAgents) {
         statusContent += "| @" + ag.name + " | READY | Idle | - | - | - | - |\n";
+        initialStatusJson[ag.name] = { state: "READY", task: "Idle", lastUpdated: now };
     }
     writeTextFile(path.join(frameworkDir, "STATUS.md"), statusContent);
+
+    // Populate initial status.json
+    const statusJsonPath = path.join(frameworkDir, "memory", "status.json");
+    if (!fs.existsSync(path.join(frameworkDir, "memory"))) fs.mkdirSync(path.join(frameworkDir, "memory"), { recursive: true });
+    writeJsonFile(statusJsonPath, initialStatusJson, dryRun);
 }
 
 export function scaffoldShims(

@@ -9,6 +9,7 @@ describe("Memory Utilities", () => {
 
     beforeEach(() => {
         tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enderun-memory-test-"));
+        process.env.ENDERUN_TEST_DIR = tempDir;
         vi.spyOn(process, "cwd").mockReturnValue(tempDir);
         vi.spyOn(memoryUtils, "getFrameworkDir").mockReturnValue(tempDir);
         vi.spyOn(memoryUtils, "getDocumentStorePath").mockReturnValue(path.join(tempDir, "memory"));
@@ -16,6 +17,7 @@ describe("Memory Utilities", () => {
     });
 
     afterEach(() => {
+        delete process.env.ENDERUN_TEST_DIR;
         fs.rmSync(tempDir, { recursive: true, force: true });
         vi.restoreAllMocks();
     });

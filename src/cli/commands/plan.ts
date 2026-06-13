@@ -55,9 +55,8 @@ export async function planCommand() {
 
         // Extract headings as task descriptions
         const headingRegex = /^#{2,4}\s+(.+)$/gm;
-        let headingMatch;
         let headingCount = 0;
-        while ((headingMatch = headingRegex.exec(content)) !== null) {
+        while (headingRegex.exec(content) !== null) {
             headingCount++;
             totalTasks++;
         }
