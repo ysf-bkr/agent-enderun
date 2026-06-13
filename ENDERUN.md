@@ -117,7 +117,6 @@ Before writing any code or design, check `docs/tech-stack.md`:
 | Target Audience | Ask — do not proceed |
 | Platform (web / mobile / desktop / backend) | Ask — do not proceed |
 | **Technology Stack** | **Check `docs/tech-stack.md` → If missing → ASK** |
-| **Execution Profile (Full / Lightweight)** | **Ask — do not proceed** |
 | Database (MariaDB / SQLite / PostgreSQL) | Ask — do not proceed |
 | Environment (prototype / production) | Ask — do not proceed |
 | Auth required? | Ask — do not proceed |
@@ -174,15 +173,6 @@ Every agent must use the **Mandatory Output Flow** defined in their specific `.m
 
 ---
 
-## EXECUTION PROFILES
-
-Depending on the size and complexity of the project, there are two execution profiles. The @manager must determine this profile at the start of the project:
-
-- **Lightweight Profile (MVP):** Only `manager`, `architect`, and `frontend` are active. Mandatory for rapid prototyping, small projects, and low-budget work. Mobile, desktop, and test agents are bypassed.
-- **Full Profile (Enterprise):** `manager`, `architect`, `backend`, `frontend`, and `quality` are active.
-
----
-
 ## API & CONTRACT MANAGEMENT
 
 ### 1. contract.version.json Standard
@@ -208,9 +198,9 @@ This file is the single source of truth for API stability. `@architect` is respo
 
 The development process follows a strict State Machine. Transition to the next phase is prohibited until the "Success Criteria" of the current phase is met.
 
-- **[STATE: PHASE_0] Discovery & Setup:** Profile selection (Lightweight/Full), requirement analysis, and validating `.enderun/docs/tech-stack.md`.
+- **[STATE: PHASE_0] Discovery & Setup:** Requirement analysis, and validating `.enderun/docs/tech-stack.md`.
 - **[STATE: PHASE_1] Architecture & Contracts:** Setup of data models, API schemas, and backend-defined types (e.g., apps/backend/src/types). Cannot proceed until Frontend and Backend approve these schemas.
-- **[STATE: PHASE_2] Core Development:** Active agents build core features in parallel based on the selected profile. (Under the apps/ folder)
+- **[STATE: PHASE_2] Core Development:** Active agents build core features in parallel. (Under the apps/ folder)
 - **[STATE: PHASE_3] Integration & Testing:** System integration.
 - **[STATE: PHASE_4] Optimization & Deployment:** Performance audit and deployment.
 

@@ -10,7 +10,6 @@ Bu doküman, Agent Enderun çerçevesi altında geliştirilecek olan **Hermes Co
 | :--- | :--- | :--- |
 | **Hedef Kitle** | Enterprise AI Yöneticileri ve Denetçiler | Kurumsal yapay zeka operasyonlarını izleyen ve onaylayan yetkililer. |
 | **Platform** | Web (Monorepo) | `apps/web` (Frontend) ve `apps/backend` (Backend) katmanları. |
-| **Yürütme Profili** | Full Profile (Enterprise) | `@manager`, `@architect`, `@backend`, `@frontend`, `@database`, `@quality` ve `@security` ajanları aktiftir. |
 | **Geliştirme Ortamı** | Node.js v20+ & TypeScript v5+ | ESM (ES Modules) standartlarında, tip güvenliği %100 doğrulanmış mimari. |
 | **Veritabanı** | PostgreSQL / SQLite | SQLite (Yerel geliştirme ve test için), PostgreSQL (Üretim/Enterprise için) — `Kysely` query builder ile. |
 | **Kimlik Doğrulama** | JWT Tabanlı Kurumsal Auth | Rol tabanlı yetkilendirme (RBAC) ve `@security` ajanı tarafından denetlenen RLS politikaları. |
