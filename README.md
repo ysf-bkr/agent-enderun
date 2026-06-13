@@ -130,4 +130,4 @@ npx agent-enderun init antigravity-cli
 
 ---
 
-Developed by **Yusuf BEKAR** | Framework Version **v1.11.5** | [Enterprise Inquiries](mailto:ybekar@masn.com)
+Developed by **Yusuf BEKAR** | Framework Version **v1.11.5** | [Enterprise Inquiries](mailto:ybekar@msn.com)
