@@ -119,6 +119,26 @@ registry.register(
     }
 );
 
+// 🏠 Local LLM (Ollama / Private AI)
+registry.register(
+    {
+        id: "local",
+        frameworkDir: ".enderun",
+        shimFile: "LOCAL_AI.md",
+        shimTemplate: "src/cli/shims/local.md",
+        role: "commander",
+        templateDir: ".enderun",
+        nestedDirs: ["agents", "rules"],
+        agentsDir: ".enderun/agents",
+        agentsExt: ".md"
+    },
+    (projectRoot, mcpBlock) => {
+        const frameworkDir = ".enderun";
+        writeJsonFile(path.join(projectRoot, frameworkDir, "mcp_config.json"), mcpBlock);
+        UI.success(`Local LLM MCP (Ollama/Private AI) registered → ${frameworkDir}/mcp_config.json`);
+    }
+);
+
 // 🛸 Antigravity
 registry.register(
     {

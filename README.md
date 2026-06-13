@@ -23,6 +23,7 @@ Standart yapay zeka kod asistanları (Claude, Cursor, Aider vb.) bağımsız "ko
 - **Gelişmiş Hafıza Sistemi:** Bağlam kaymasını engelleyen 3 katmanlı hafıza mimarisi.
 - **Token Ekonomisi:** %90'a varan tasarruf sağlayan "Cerrahi Müdahale" (Surgical Edits) mantığı.
 - **Hermes Mesaj Aracısı:** Ajan çakışmalarını engelleyen asenkron, olay tabanlı iletişim.
+- **Güvenli Yerel AI:** %100 veri gizliliği için **Yerel LLM** (Ollama, vLLM) desteği.
 
 ---
 
@@ -43,6 +44,7 @@ Standard AI coding assistants act as independent "code writers". Without strict 
 - **Advanced Memory System:** 3-tier architecture that prevents context drift.
 - **Token Economy:** Up to 90% savings via "Surgical Edits" instead of full rewrites.
 - **Hermes Message Broker:** Asynchronous communication preventing agent conflicts.
+- **Private & Secure AI:** Support for **Local LLMs** (Ollama, vLLM) ensuring 100% data privacy.
 
 ---
 
@@ -112,6 +114,9 @@ npx agent-enderun init claude --unified --yes
 
 # Grok için (Autonomous Reconnaissance)
 npx agent-enderun init grok
+
+# Yerel LLM için (Private AI - Ollama/vLLM)
+npx agent-enderun init local
 ```
 
 ---
