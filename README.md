@@ -99,7 +99,7 @@ Agent Enderun **Open Core** modelini takip eder. Çekirdek çerçeve açık kayn
 | **Security & RBAC** | Basic Access | Role-Based Workflows | Advanced RLS & SSO |
 | **Support** | Community / GitHub | Standard Email Support | 24/7 SLA & Success Manager |
 
-*Enterprise: [enterprise@agent-enderun.com](mailto:enterprise@agent-enderun.com)*
+*Enterprise: [ybekar@masn.com](mailto:ybekar@masn.com)*
 
 ---
 
@@ -130,4 +130,4 @@ npx agent-enderun init antigravity-cli
 
 ---
 
-Developed by **Yusuf BEKAR** | Framework Version **v1.11.5** | [Enterprise Inquiries](mailto:enterprise@agent-enderun.com)
+Developed by **Yusuf BEKAR** | Framework Version **v1.11.5** | [Enterprise Inquiries](mailto:ybekar@masn.com)
